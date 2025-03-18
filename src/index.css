@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Sigmar&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Sigmar&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=WindSong:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Birthstone&family=League+Script&family=Mea+Culpa&family=Protest+Guerrilla&family=Sigmar&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=WindSong:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap");
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/*========== Base Style ===========*/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Source Sans Pro", sans-serif;
+}
+
+/* ========= pre-define css ========= */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: black;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+h3,
+h4 {
+  font-size: 1.6rem;
+}
+
+h5,
+h6 {
+  font-size: 1.2rem;
+}
+
+a {
+  text-decoration: none;
+  color: unset;
+}
+
+a:hover {
+  color: unset;
+}
+
+ul {
+  margin: 0;
+  list-style: none;
+}
+
+.section__title {
+  color: black;
+  font-weight: 400;
+  font-size: 2rem;
+  font-family: "Sigmar", serif;
+}
+
+.section__subtitle {
+  color: #dd8a0d;
+  font-weight: 800;
+  font-size: 2rem;
+  font-family: "Birthstone", cursive;
+  
+}
+
+.section__description {
+  color: #7c8a97;
+  font-size: 0.9rem;
+  line-height: 30px;
+}
+
+section {
+  padding: 50px 0px;
+}
+
+.btn {
+  padding: 7px 15px;
+  background: black;
+  color: #fff;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  color: #fff !important;
+  background: #000c6bd0;
+}
+
+@media only screen and (max-width: 768px) {
+  section {
+    padding: 30px 0px;
+  }
+
+  .section__title {
+    font-size: 1.6rem;
+  }
+
+  .section__subtitle {
+    font-size: 1.1rem;
+  }
+}
+

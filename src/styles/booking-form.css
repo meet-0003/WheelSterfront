@@ -1,0 +1,148 @@
+/* Heading Container */
+.heading-container {
+    width: 98%;
+    background-color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: 10px;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .heading-container h1 {
+    margin: 0;
+    font-size: 40px;
+    font-weight: bold;
+    font-family: "WindSong", serif;
+      color: #dd8a0d;
+  }
+  
+  .booking-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 20px;
+  }
+  
+  .booking-container {
+    width: 50%;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .map-container {
+    width: 50%;
+    height: 520px;
+    margin-left: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .booking-container h2,
+  .map-container h5 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  input,
+  select,
+  textarea {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  textarea {
+    resize: none;
+    height: 80px;
+  }
+  
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .checkbox-group input {
+    margin-right: 5px; /* Space between checkbox and text */
+  }
+  
+  
+  .form-buttons {
+    display: flex;
+    margin-top: 20px;
+  }
+  
+  
+  .back-btn {
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: black;
+    color: white;
+    margin-right:10px;
+    margin-left: 340px;
+  }
+  
+  .continue-btn {
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    background: #dd8a0d;
+    color: white;
+  }
+  
+  .pay-btn {
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    background: #dd8a0d;
+    color: white;
+  }
+  
+  .clink{
+    text-decoration: none;
+    color: white;
+  }

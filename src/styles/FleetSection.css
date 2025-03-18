@@ -1,0 +1,93 @@
+.fleet-section {
+    text-align: center;
+    padding: 30px 0;
+    background-color: #f8f8f8;
+  }
+  
+  .fleet-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #000;
+  }
+  
+  .fleet-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 40px;
+  }
+  
+  .fleet-categories {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;  /* Ensure vertical alignment */
+      margin: 0 auto;
+    }
+    
+  
+    .fleet-category {
+      width: 20%;
+      margin-left: 50px;
+      margin-right: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .fleet-category h3 {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .fleet-category p {
+      font-size: 14px;
+      color: #666;
+      min-height: 40px;  /* Ensure uniform text block size */
+    }
+  
+  /* Ensure all "See more" links are aligned */
+  .fleet-category .see-more {
+    color: green;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+    min-height: 20px; /* Make all links align */
+  }
+  
+  
+  .fleet-images {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 40px;
+    padding-bottom: 30px;
+  }
+  
+  .fleet-image {
+    width: 17%;
+    max-height: 120px;
+    object-fit: contain;
+  }
+  
+  
+    .explore-button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    .explore-button {
+      background-color: #f9a826;
+      color: black;
+      padding: 11px 40px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    
+    .explore-button:hover {
+      background-color: rgb(173, 117, 49);
+    }

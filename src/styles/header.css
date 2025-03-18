@@ -1,0 +1,243 @@
+.header__secondary {
+    padding: 10px 0px;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+  
+  .logo-img {
+    width: 100px;
+    height: 50px;
+    /* max-height: 100px; */
+  }
+
+  .logo-name {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-left: 10px;
+    color: black;
+    font-family: 'Raleway', sans-serif;
+  }
+  
+  .header__secondary__right a {
+    text-decoration: none;
+    color:black;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .header__secondary__right{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Ensures buttons stay on the right */
+    gap: 10px; /* Adds spacing between buttons */
+    width: 100%;
+  }
+
+  .header__secondary__right a:hover {
+    color: black;
+  }
+
+  .header__btn {
+    background: black !important;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    width: 100px;
+  }
+
+  .header__btn a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+    justify-content: end;
+    font-size: 0.9rem;
+  }
+
+  .header__btnLogin {
+    background: black !important;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    width: 80px;
+  }
+
+  .header-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    gap: 10px;
+  }
+  
+  .header__btnLogin a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+    justify-content: end;
+    font-size: 0.9rem;
+  }
+  
+  .header__btn a:hover {
+    color: #fff;
+  }
+
+/* ================ main navbar styles =========== */
+
+.main__navbar {
+    padding: 15px 0px;
+    background: #fff;
+  }
+  
+  .mobile__menu i {
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+  
+  .mobile__menu {
+    display: none;
+  }
+  
+  .menu {
+    display: flex;
+    align-items: center;
+    column-gap: 2.7rem;
+  }
+  
+  .nav__item {
+    color: black;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+  
+  .nav__item:hover {
+    color: #f9a826;
+  }
+  
+.nav__active {
+    color: #f9a826;
+  }
+  
+  @media only screen and (max-width: 768px) {
+    .header__top,
+    .header__middle,
+    .nav__right {
+      display: none;
+    }
+  
+    .mobile__menu {
+      display: block;
+    }
+  
+    .navigation {
+      background: rgb(0, 13, 107, 0.6);
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      display: none;
+    }
+  
+    .menu {
+      width: 250px;
+      height: 100%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      row-gap: 2rem;
+      justify-content: center;
+    }
+  
+    .menu a {
+      color:black;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  
+    .menu__active {
+      display: block;
+    }
+  }
+
+// profile
+
+  .profile-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .profile-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .profile-image {
+    border: 2px solid black; 
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    transition: transform 0.2s ease-in-out;
+    object-fit: cover;
+  }
+  
+  .profile-image:hover {
+    transform: scale(1.1);
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    top: 50px; 
+    right: 0;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    width: 120px;
+    display: none;
+    flex-direction: column;
+    z-index: 1000; 
+  }
+  
+  .profile-container:hover .dropdown-menu {
+    display: flex;
+  }
+  
+  .dropdown-content {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .dropdown-content li {
+    text-align: center;
+  }
+  
+  .dropdown-content .btn {
+    background: none;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: black;
+    transition: background 0.2s;
+  }
+  
+  .dropdown-content .btn:hover {
+    background: #f9a826;
+  }
+  
+  
+  
