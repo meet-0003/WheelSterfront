@@ -1,13 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Load user from localStorage
-const persistedUser = JSON.parse(localStorage.getItem("user")) || null;
+const persistedUser = (() => {
+  try {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error("Error parsing user from localStorage:", error);
+    localStorage.removeItem("user"); // Clear invalid data
+    return null;
+  }
+})();
+
 const persistedToken = localStorage.getItem("token") || null;
 
-const authSlice = createSlice({
+const auth = createSlice({
   name: "auth",
   initialState: {
-    isLoggedIn: persistedUser ? true : false,
+    isLoggedIn: !!persistedUser,
     role: persistedUser?.role || "user",
     user: persistedUser,
     token: persistedToken,
@@ -16,9 +25,9 @@ const authSlice = createSlice({
     login(state, action) {
       state.isLoggedIn = true;
       state.user = action.payload;
-      state.token = action.payload.token; // Assuming API returns token
+      state.role = action.payload.role;  // ✅ Ensure role updates
+      state.token = action.payload.token;
 
-      // Store user & token in localStorage
       localStorage.setItem("user", JSON.stringify(action.payload));
       localStorage.setItem("token", action.payload.token);
     },
@@ -30,19 +39,22 @@ const authSlice = createSlice({
       localStorage.removeItem("token");
     },
     changeRole(state, action) {
-      const role = action.payload;
-      state.role = role;
+      state.role = action.payload;
+      state.user.role = action.payload;
+      localStorage.setItem("user", JSON.stringify(state.user)); 
     },
     updateUser(state, action) {
       state.user = action.payload;
-
-      // Update localStorage
+      state.role = action.payload.role;
       localStorage.setItem("user", JSON.stringify(action.payload));
     },
+    updateToken(state, action) { // ✅ Add this function
+      state.token = action.payload;
+      localStorage.setItem("token", action.payload);
+    }
   },
 });
 
-export const authActions = authSlice.actions;
-export default authSlice.reducer;
-
+export const authActions = auth.actions;
+export default auth.reducer;
 

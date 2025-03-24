@@ -13,9 +13,9 @@ import { Button, Layout, Menu, theme } from "antd";
 import Card from "./vehicle/Card";
 import Allusers from "./admin/Allusers";
 import Bookings from "./admin/Bookings";
-import DriverForm from "./user/Driverform";
+import DriverForm from "./user/DriverForm";
 import VehicleForm from "./admin/VehicleForm";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Admin from "./admin/Admin";
 import Approoval from "./admin/Approoval";
 import Companydata from "./admin/Companydata";
@@ -35,16 +35,23 @@ function Profile() {
   const user = useSelector((state) => state.auth.user);
   const [role, setRole] = useState(user?.role);
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
   const [selectedKey, setSelectedKey] = useState("1");
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  useEffect(() => {
+    if (location.state?.selectedKey) {
+      setSelectedKey(location.state.selectedKey);
+    }
+  }, [location]);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
       dispatch({ type: "UPDATE_USER", payload: storedUser });
+      setRole(storedUser.role); // Ensure role is set after reload
     }
   }, [dispatch]);
 
@@ -91,6 +98,14 @@ function Profile() {
     navigate('/');
     window.location.reload();
 
+  };
+
+  const handleRoleUpdate = (newRole) => {
+    setRole(newRole);
+    dispatch(authActions.changeRole(newRole)); // Update Redux state
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    storedUser.role = newRole;
+    localStorage.setItem("user", JSON.stringify(storedUser)); // Persist role update
   };
   
 
@@ -177,7 +192,7 @@ function Profile() {
             </div>
           )}
           {selectedKey === "2" && role === "user" && <Bookings />}
-          {selectedKey === "3" && role === "user" && <DriverForm onSuccess={() => { setRole("driver"); setSelectedKey("A"); }} />}
+          {selectedKey === "3" && role === "user" && <DriverForm onSuccess={() => handleRoleUpdate("driver")} />}
           {selectedKey === "4" && role === "user" && <Link onClick={handleLogout}>Logging out...</Link>}
 
 

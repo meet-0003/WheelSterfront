@@ -140,7 +140,7 @@ const Userprofile = () => {
           <img
             src={user?.avatar ? `http://localhost:2000${user.avatar}` : "https://via.placeholder.com/150"}
             alt="User Avatar"
-            className="rounded-full w-[160px] h-[130px] object-cover border-4 border-blue-500 shadow-lg"
+            className="rounded-full w-[170px] h-[130px] object-cover border-4 border-blue-500 shadow-lg"
           />
 
           {/* Input field for selecting new avatar */}

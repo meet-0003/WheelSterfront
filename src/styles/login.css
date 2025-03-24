@@ -17,7 +17,7 @@
     width: 600px;
     height: 100vh;
     background: white;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    /* box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2); */
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -75,11 +75,29 @@
     border-radius: 5px;
   }
   
+  .login-container h2 {
+    font-size: 2rem;
+    color: #f9a826;
+    margin-bottom: 70px;
+    text-align: center;
+  }
   
+  .login-container button {
+    width: 100%;
+    padding: 12px;
+    margin-top:60px;
+    background:#f9a826;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
   
   
   /* Container Styling */
-  .signup-container, .login-container {
+  .signup-container{
     max-width: 500px;
     margin: 40px auto;
     padding: 30px;
@@ -89,7 +107,7 @@
   }
   
   /* Form Title */
-  .signup-container h2, .login-container h2 {
+  .signup-container h2 {
     font-size: 2rem;
     color: #f9a826;
     margin-bottom: 20px;
@@ -114,7 +132,7 @@
   }
   
   /* Submit Button */
-  .signup-container button, .login-container button {
+  .signup-container button{
     width: 100%;
     padding: 12px;
     background:#f9a826;

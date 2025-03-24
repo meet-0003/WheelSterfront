@@ -1,129 +1,109 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { CreditCardIcon, BanknotesIcon } from "@heroicons/react/24/outline";
 import "../../styles/PaymentPage.css"; 
-import { useLocation } from "react-router-dom";
 
 const PaymentPage = () => {
-
-const location = useLocation();
-const params = new URLSearchParams(location.search);
-  const bookingId = params.get("bookingId") || localStorage.getItem("bookingId"); // Retrieve from URL or localStorage
-  const [paymentMethod, setPaymentMethod] = useState(""); 
-  const [cardDetails, setCardDetails] = useState({
-    nameOnCard: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-  });
+  const stripe = useStripe();
+  const elements = useElements();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const bookingId = params.get("bookingId") || localStorage.getItem("bookingId");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle payment submission
   const handlePayment = async () => {
     if (!paymentMethod) {
-        alert("Please select a payment method");
+      toast.error("Please select a payment method", { position: "top-right" });
+      return;
+    }
+
+    let paymentMethodId = null;
+
+    if (paymentMethod === "Card" && stripe && elements) {
+      setLoading(true);
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: "card",
+        card: elements.getElement(CardElement),
+      });
+
+      if (error) {
+        toast.error(error.message);
+        setLoading(false);
         return;
+      }
+
+      paymentMethodId = paymentMethod.id;
     }
 
     try {
-        const token = localStorage.getItem("token");
-        const response = await axios.post(
-            "http://localhost:2000/api/v2/process-payment",
-            {
-                bookingId: bookingId, // Ensure correct field name
-                method: paymentMethod,
-                paymentId: paymentMethod === "cod" ? "COD" : generatePaymentId(),
-            },
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-        );
+      const token = localStorage.getItem("token");
+      const response = await axios.post("http://localhost:2000/api/v2/process-payment", {
+        bookingId,
+        method: paymentMethod,
+        paymentMethodId,
+      }, { headers: { authorization: `Bearer ${token}` } });
 
-        alert(response.data.message);
-        navigate("/bookings"); // Redirect to bookings page
+      toast.success("Payment successful!", { position: "top-right" });
+
+      // Redirect to success page
+      setTimeout(() => {
+        navigate("/payment-success");
+      }, 2000);
+      
     } catch (error) {
-        console.error("Payment failed:", error);
-        alert(error.response?.data?.message || "Payment failed!");
+      toast.error(error.response?.data?.message || "Payment failed!");
+    } finally {
+      setLoading(false);
     }
-};
-
-  // Function to generate mock payment ID (for demo purposes)
-  const generatePaymentId = () => `PAY_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  };
 
   return (
-    <div className="payment-wrapper">
-      <div className="heading-container">
-        <h2>Payment Details</h2>
-      </div>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-96">
+        <h2 className="text-xl font-bold text-gray-700 mb-4">Secure Payment</h2>
+        <p className="text-gray-600">Select your payment method:</p>
 
-      <div className="payment-container">
-        <h3>Choose a Payment Method</h3>
-
-        <div className="radio-container">
-          <label>
-            <input
-              type="radio"
-              name="payment"
-              value="cod"
-              checked={paymentMethod === "cod"}
-              onChange={() => setPaymentMethod("cod")}
-            />
+        <div className="flex gap-4 mt-4">
+          <button
+            onClick={() => setPaymentMethod("COD")}
+            className={`flex items-center gap-2 p-3 border rounded-lg w-full ${
+              paymentMethod === "COD" ? "bg-green-100 border-green-500" : "bg-gray-100"
+            }`}
+          >
+            <BanknotesIcon className="w-5 h-5 text-gray-700" />
             Cash on Delivery
-          </label>
+          </button>
 
-          <label>
-            <input
-              type="radio"
-              name="payment"
-              value="card"
-              checked={paymentMethod === "card"}
-              onChange={() => setPaymentMethod("card")}
-            />
-            Pay with Card
-          </label>
+          <button
+            onClick={() => setPaymentMethod("Card")}
+            className={`flex items-center gap-2 p-3 border rounded-lg w-full ${
+              paymentMethod === "Card" ? "bg-blue-100 border-blue-500" : "bg-gray-100"
+            }`}
+          >
+            <CreditCardIcon className="w-5 h-5 text-gray-700" />
+            Credit/Debit Card
+          </button>
         </div>
 
-        {/* Show Card Details Form if "Pay with Card" is Selected */}
-        {paymentMethod === "card" && (
-          <div className="card-details">
-            <label>Name on Card</label>
-            <input
-              type="text"
-              value={cardDetails.nameOnCard}
-              onChange={(e) => setCardDetails({ ...cardDetails, nameOnCard: e.target.value })}
-              placeholder="Enter name on card"
-            />
-
-            <label>Card Number</label>
-            <input
-              type="number"
-              value={cardDetails.cardNumber}
-              onChange={(e) => setCardDetails({ ...cardDetails, cardNumber: e.target.value })}
-              placeholder="Enter card number"
-            />
-
-            <label>Expiry Date</label>
-            <input
-              type="month"
-              value={cardDetails.expiryDate}
-              onChange={(e) => setCardDetails({ ...cardDetails, expiryDate: e.target.value })}
-            />
-
-            <label>CVV</label>
-            <input
-              type="text"
-              maxLength="3"
-              value={cardDetails.cvv}
-              onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value })}
-              placeholder="Enter CVV"
-            />
+        {paymentMethod === "Card" && (
+          <div className="mt-4 p-3 border rounded-lg">
+            <CardElement />
           </div>
         )}
 
-        <div className="buttons">
-          <Link to={`/book/${bookingId}`} className="back-btn">Back</Link>
-          <button className="pay-btn" onClick={handlePayment}>Pay Now</button>
-        </div>
+        <button
+          disabled={loading}
+          onClick={handlePayment}
+          className="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition"
+        >
+          {loading ? "Processing..." : "Pay Now"}
+        </button>
       </div>
     </div>
   );

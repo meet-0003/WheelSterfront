@@ -25,10 +25,10 @@ const Login = ({ isOpen, onClose }) => {
 
   const submit = async (e) => {
     e.preventDefault();
-
+  
     try {
       if (!Values.username.trim() || !Values.password.trim()) {
-        alert("All fields are required.");
+        toast.warn("All fields are required.");
         return;
       }
       const response = await axios.post("http://localhost:2000/api/v2/sign-in", Values);
@@ -43,7 +43,7 @@ const Login = ({ isOpen, onClose }) => {
       onClose();
       navigate('/')
     } catch (error) {
-      alert(error.response.data.message);
+      toast.error(error.response?.data?.message || "Invalid credentials");
     }
   };
 
@@ -91,8 +91,8 @@ const Login = ({ isOpen, onClose }) => {
       {/* Sliding Login Panel */}
       <form action="">
         <div className={`login-panel ${isOpen ? "active" : ""}`}>
-          <div className="login-container">
             <span className="close-btn" onClick={onClose}>✖</span>
+          <div className="login-container shadow-none">
             <h2>Personal account login</h2>
 
             <label className="label">
@@ -180,9 +180,9 @@ const Login = ({ isOpen, onClose }) => {
             </a>
           </div>
 
+ <ToastContainer />
         </div>
       </form>
-
     </>
   );
 };

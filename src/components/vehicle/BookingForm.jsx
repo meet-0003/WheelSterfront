@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker} from "react-leaflet";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "../../styles/booking-form.css";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import DatePicker from "react-datepicker";  // Import React DatePicker
+import "react-datepicker/dist/react-datepicker.css";
 
 
 const BookingForm = ({ data }) => {
 
-  const { vehicleId } = useParams(); 
+
+  const { vehicleId } = useParams();
+  const [bookedDates, setBookedDates] = useState([]); // Store booked dates
+
   const [formData, setFormData] = useState({
-    vehicleId: vehicleId, 
+    vehicleId: vehicleId,
     startDate: "",
     endDate: "",
     location: "",
@@ -22,10 +27,48 @@ const BookingForm = ({ data }) => {
     pincode: "",
     pickupTime: "",
     duration: "",
-    totalAmount: 0, 
+    totalAmount: 0,
     withDriver: false,
     licenseNumber: "",
   });
+
+  useEffect(() => {
+    if (vehicleId) {
+      fetchBookedDates();
+    } 
+  }, [vehicleId]);
+  
+
+  const fetchBookedDates = async () => {
+    try {
+      const response = await axios.get(`http://localhost:2000/api/v2/bookings/${vehicleId}`);
+      const data = response.data;
+      
+      const bookedDatesArray = data.bookings.map(booking => {
+        const date = new Date(booking.startDate);
+        return isNaN(date) ? null : date;
+      }).filter(date => date !== null);
+  
+      setBookedDates(bookedDatesArray);
+    } catch (error) {
+      console.error("Error fetching booked dates:", error);
+    }
+  };
+
+  // Check if a date is booked
+  const isDateBooked = (date) => {
+    return bookedDates.some(bookedDate =>
+      bookedDate instanceof Date &&
+      !isNaN(bookedDate) &&
+      bookedDate.getTime() === date.getTime()
+    );
+
+  };
+
+  // Handle start date change
+  const handleStartDateChange = (date) => {
+    setFormData({ ...formData, startDate: date });
+  };
 
   const [mapCenter, setMapCenter] = useState([21.1702, 72.8311]); // Default Surat location
   const [markerPosition, setMarkerPosition] = useState([21.1702, 72.8311]);
@@ -33,7 +76,7 @@ const BookingForm = ({ data }) => {
   useEffect(() => {
     setFormData((prevData) => ({
       ...prevData,
-      vehicleId: vehicleId, 
+      vehicleId: vehicleId,
     }));
   }, [vehicleId]);
 
@@ -57,8 +100,8 @@ const BookingForm = ({ data }) => {
     }
   };
 
-  
-  
+
+
 
   // Function to fetch location coordinates
   const fetchLocation = async (address) => {
@@ -85,11 +128,11 @@ const BookingForm = ({ data }) => {
     setFormData({
       ...formData,
       withDriver: isWithDriver,
-      licenseNumber: isWithDriver ? "" : formData.licenseNumber, 
+      licenseNumber: isWithDriver ? "" : formData.licenseNumber,
     });
   };
 
-  
+
   // Auto-update map on formData change
   useEffect(() => {
     const fullAddress = `${formData.area}, ${formData.location}, ${formData.city}, ${formData.state}, ${formData.country}, ${formData.pincode}`;
@@ -101,19 +144,19 @@ const BookingForm = ({ data }) => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token"); 
+      const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:2000/api/v2/create-booking", 
+        "http://localhost:2000/api/v2/create-booking",
         formData,
         {
-          headers: { Authorization: `Bearer ${token}` }, 
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (response.data.bookingId) {
         // Store bookingId in localStorage or pass it via state
-        localStorage.setItem("bookingId", response.data.bookingId);  
-        
+        localStorage.setItem("bookingId", response.data.bookingId);
+
         // Redirect to payment page with bookingId
         navigate(`/paymentpage?bookingId=${response.data.bookingId}`);
       } else {
@@ -185,8 +228,47 @@ const BookingForm = ({ data }) => {
             {/* Pickup Time & Duration & Total Amount */}
             <div className="form-row">
               <div className="form-group">
+                <label>Start Date</label>
+                <DatePicker
+                  selected={formData.startDate}
+                  onChange={(date) => setFormData({ ...formData, startDate: date })}
+                  minDate={new Date()} // Disable past dates
+                  filterDate={(date) => !isDateBooked(date)} // ✅ Pass date correctly
+                  dateFormat="yyyy-MM-dd"
+                  dayClassName={(date) => (isDateBooked(date) ? "booked-day" : undefined)}
+                />
+
+
+                <label>End Date</label>
+                <DatePicker
+                  selected={formData.endDate}
+                  onChange={(date) => setFormData({ ...formData, endDate: date })}
+                  minDate={formData.startDate || new Date()} // Ensure end date is after start date
+                  filterDate={(date) => !isDateBooked(date)}
+                  dateFormat="yyyy-MM-dd"
+                  dayClassName={(date) => isDateBooked(date) ? "react-datepicker__day--booked" : undefined} // Add class to booked dates
+                />
+
+
                 <label>Pickup Time</label>
-                <input type="datetime-local" name="pickupTime" value={formData.pickupTime} onChange={handleChange} />
+                <DatePicker
+                  selected={formData.pickupTime}
+                  onChange={(time) => {
+                    // Ensure pickupTime uses the same date as startDate
+                    if (formData.startDate) {
+                      const selectedDate = new Date(formData.startDate);
+                      selectedDate.setHours(time.getHours(), time.getMinutes()); // Merge time into startDate
+                      setFormData({ ...formData, pickupTime: selectedDate });
+                    } else {
+                      alert("Please select a start date first.");
+                    }
+                  }}
+                  showTimeSelect
+                  showTimeSelectOnly
+                  timeIntervals={15}
+                  timeFormat="HH:mm"
+                  dateFormat="HH:mm"
+                />
               </div>
               <div className="form-group">
                 <label>Duration (in days)</label>
@@ -244,12 +326,12 @@ const BookingForm = ({ data }) => {
 
         {/* Right Side: Map Container */}
         <div className="map-container">
-        <h5>Pickup Location</h5>
-        <MapContainer center={mapCenter} zoom={13} style={{ height: "400px", width: "100%" }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <Marker position={markerPosition} icon={L.icon({ iconUrl: "https://leafletjs.com/examples/custom-icons/leaf-red.png", iconSize: [25, 41], iconAnchor: [12, 41] })} />
-        </MapContainer>
-      </div>
+          <h5>Pickup Location</h5>
+          <MapContainer center={mapCenter} zoom={13} style={{ height: "400px", width: "100%" }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <Marker position={markerPosition} icon={L.icon({ iconUrl: "https://leafletjs.com/examples/custom-icons/leaf-red.png", iconSize: [25, 41], iconAnchor: [12, 41] })} />
+          </MapContainer>
+        </div>
       </div>
     </div>
   );

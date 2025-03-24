@@ -1,0 +1,38 @@
+.social__link-icon {
+    text-decoration: none;
+  
+    color: black;
+    font-weight: 500;
+    font-size: 1.2rem;
+  }
+  
+  .getintouch{
+    font-family: "WindSong", serif;
+    color: #dd8a0d;
+    font-weight: 500;
+    font-size: 2.8rem;
+  }
+  .contactfield{
+    width: 100%;
+  }
+  
+  .coninfo{
+    font-family: "Sigmar", serif;
+  }
+  
+  .contact__btn {
+    padding: 7px 15px;
+    background: #dd8a0d;;
+    color:black;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+  }
+  
+  
+  @media only screen and (max-width: 768px) {
+    .contact__btn {
+      margin-bottom: 40px;
+      font-size: 0.8rem;
+    }
+  }

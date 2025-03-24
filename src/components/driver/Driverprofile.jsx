@@ -27,7 +27,7 @@ const Driverprofile = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get("http://localhost:2000/api/v2/get-user-information", {
-          headers: { authorization: `Bearer ${token}` },
+          headers: { authorization: `bearer ${token}` },
         });
 
         setDriver(response.data);

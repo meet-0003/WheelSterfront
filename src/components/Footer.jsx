@@ -1,111 +1,90 @@
-import React from 'react'
-import { Container, Row, Col, ListGroup, ListGroupItem } from "reactstrap";
+import React from "react";
 import { Link } from "react-router-dom";
 import "../styles/footer.css";
 
 const quickLinks = [
-    {
-      path: "/about",
-      display: "About",
-    },
-  
-    {
-      path: "#",
-      display: "Privacy Policy",
-    },
-  
-    {
-      path: "/vehicles",
-      display: "Vehicle Listing",
-    },
-    {
-      path: "/services",
-      display: "Services",
-    },
-  
-    {
-      path: "/contact",
-      display: "Contact",
-    },
-  ];
+  { path: "/aboutus", display: "About" },
+  { path: "#", display: "Privacy Policy" },
+  { path: "/vehicles", display: "Vehicle Listing" },
+  { path: "/services", display: "Services" },
+  { path: "/contactus", display: "Contact" },
+];
+
+const socialLinks = [
+  { icon: "ri-facebook-fill", link: "https://facebook.com" },
+  { icon: "ri-instagram-fill", link: "https://instagram.com" },
+  { icon: "ri-twitter-fill", link: "https://twitter.com" },
+  { icon: "ri-linkedin-fill", link: "https://linkedin.com" },
+];
 
 const Footer = () => {
-    const date = new Date();
-  const year = date.getFullYear();
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="footer">
-      <Container>
-        <Row>
-          <Col lg="4" md="4" sm="12">
-            <div className="logo footer__logo">
-              <h1>
-                <Link to="/home" className=" d-flex align-items-center gap-2">
-                <i className="ri-roadster-fill"></i>
-                <i className="ri-motorbike-fill"></i>
-                  <span>
-                    WheelSter <br /> Services
-                  </span>
-                </Link>
-              </h1>
+    <footer className="bg-gray-900 text-white py-10">
+      <div className="container mx-auto px-5">
+        <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
+          {/* Company Logo & Description */}
+          <div>
+            <div className="flex items-center space-x-3">
+              <img src="/img/logoo.png" alt="WheelSter Logo" className="w-[100px] h-[60px]" />
+              <h1 className="text-xl text-white font-bold">WheelSter Services</h1>
             </div>
-            <p className="footer__logo-content">
-            Looking for a reliable and affordable vehicle rental service? 
-            We offer a seamless booking experience with a wide range of well-maintained cars, 
-            bikes, and more to suit your needs. Whether it's a quick city ride or a long road trip, 
-            rent your perfect vehicle with ease and drive stress-free!
+            <p className="mt-3 text-gray-400 text-sm">
+              Reliable and affordable vehicle rental service. Choose from well-maintained
+              cars, bikes, and more for your journey.
             </p>
-          </Col>
+          </div>
 
-          <Col lg="2" md="4" sm="6">
-            <div className="mb-4">
-              <h5 className="footer__link-title">Quick Links</h5>
-              <ListGroup>
-                {quickLinks.map((item, index) => (
-                  <ListGroupItem key={index} className="p-0 mt-3 quick__link">
-                    <Link to={item.path}>{item.display}</Link>
-                  </ListGroupItem>
-                ))}
-              </ListGroup>
+          {/* Quick Links */}
+          <div>
+            <h5 className="text-lg font-semibold text-[#f9a826] mb-3">Quick Links</h5>
+            <ul className="space-y-2">
+              {quickLinks.map((item, index) => (
+                <li key={index}>
+                  <Link to={item.path} className="text-gray-400 hover:text-white transition">
+                    {item.display}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Head Office */}
+          <div>
+            <h5 className="text-lg font-semibold text-[#f9a826] mb-3">Head Office</h5>
+            <p className="text-gray-400">123, Surat, Gujarat</p>
+            <p className="text-gray-400">Phone: +91 93167 64250</p>
+            <p className="text-gray-400">Email: wheelster123@gmail.com</p>
+            <p className="text-gray-400">Office Time: 10am - 7pm</p>
+          </div>
+
+          {/* Social Media */}
+          <div>
+            <h5 className="text-lg font-semibold text-[#f9a826] mb-3">Follow Us</h5>
+            <div className="flex space-x-4">
+              {socialLinks.map((item, index) => (
+                <a
+                  key={index}
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 text-2xl hover:text-white transition"
+                >
+                  <i className={item.icon}></i>
+                </a>
+              ))}
             </div>
-          </Col>
+          </div>
+        </div>
 
-          <Col lg="3" md="4" sm="6">
-            <div className="mb-4">
-              <h5 className="footer__link-title mb-4">Head Office</h5>
-              <p className="office__info">123, Surat, Gujarat</p>
-              <p className="office__info">Phone: +91 93167 64250</p>
-
-              <p className="office__info">Email: wheelster123@gmail.com</p>
-
-              <p className="office__info">Office Time: 10am - 7pm</p>
-            </div>
-          </Col>
-
-          <Col lg="3" md="4" sm="12">
-            <div className="mb-4">
-              <h5 className="footer__link-title">Newsletter</h5>
-              <p className="section__description">Subscribe our newsletter</p>
-              <div className="newsletter">
-                <input type="email" placeholder="Email" />
-                <span>
-                  <i className="ri-send-plane-line"></i>
-                </span>
-              </div>
-            </div>
-          </Col>
-
-          <Col lg="12">
-            <div className="footer__bottom">
-              <p className="section__description d-flex align-items-center justify-content-center gap-1 pt-4">
-                <i className="ri-copyright-line"></i>Copyright {year}, Developed by
-                Wheelster Services. All rights reserved.
-              </p>
-            </div>
-          </Col>
-        </Row>
-      </Container>
+        {/* Footer Bottom */}
+        <div className="border-t border-gray-700 mt-8 pt-4 text-center text-gray-400 text-sm">
+          <p>&copy; {year} WheelSter Services. All rights reserved.</p>
+        </div>
+      </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

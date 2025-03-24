@@ -7,26 +7,54 @@ import { message, Form, Input, DatePicker, Select, Button } from "antd";
 const DriverForm = ({ onSuccess }) => {
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const [form] = Form.useForm();
+  console.log("Redux State:", useSelector((state) => state.auth.token));
+
 
   const handleSubmit = async (values) => {
+    setLoading(true);
+
     try {
-      const res = await axios.put(`http://localhost:2000/api/v2/update-to-driver`, {
-        driverInfo: values, // Send only driverInfo
-      }, {
-        headers: { authorization: `bearer ${localStorage.getItem("token")}` } // Send token
-      });
+        const res = await axios.put("http://localhost:2000/api/v2/update-to-driver", {
+            userId: user._id,  
+            driverInfo: values,
+        }, {
+            headers: { authorization: `bearer ${localStorage.getItem("token")}` }
+        });
 
-      message.success("Driver profile updated successfully!");
+        console.log(res.data);
 
-      dispatch(authActions.updateUser(res.data.user));
+        console.log("Token stored in LocalStorage:", localStorage.getItem("token"));
 
+        if (res.data.token) { // ✅ Ensure token is received
+    
+          // ✅ Update Redux state with new user & token
+          dispatch(authActions.updateUser(res.data.user));
+          dispatch(authActions.updateToken(res.data.token));
+          console.log("Updated Redux Token:", res.data.token);
+
+    
+          // ✅ Save token & user in localStorage
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          localStorage.setItem("token", res.data.token);
+    
+          // ✅ Reload page to reflect changes
+          window.location.reload();
+          
+        } else {
+          throw new Error("Token not received in response.");
+        }
+        console.log("🔹 LocalStorage Token After Refresh:", localStorage.getItem("token"));
     } catch (error) {
-      message.error("Error updating driver profile.");
-      console.error(error);
+        message.error("Error updating driver profile.");
+        console.error(error);
+    } finally {
+        setLoading(false);
     }
 };
+
 
   
 
@@ -78,7 +106,7 @@ const DriverForm = ({ onSuccess }) => {
 
         <Form.Item>
           <Button type="primary" htmlType="submit" className="w-full">
-            Submit
+          {loading ? "Submitting..." : "Submit"}
           </Button>
         </Form.Item>
       </Form>

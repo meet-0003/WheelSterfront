@@ -92,9 +92,10 @@ function Signup() {
 
     return (
         <>
+        <div className='max-w-screen-2xl flex container mx-auto md:px-20 px-4 py-16'>
             <div className='signup-container'>
                 <span className="close-btn"><Link to='/'>✖</Link></span>
-                <h1>Sign Up</h1>
+                <h2>Sign Up</h2>
                 <form onSubmit={submit}>
                     <div>
                         <label htmlFor='avatar'>Profile Photo</label>
@@ -148,10 +149,12 @@ function Signup() {
                             onChange={change}
                         />
                     </div>
-                    <button type='submit'>Signup</button>
+                    <button type='submit' className='mt-4'>Signup</button>
+                    <div className='mt-4'>
                     <span>Already have an account?
                         <Link onClick={openLogin}> Login</Link>
                     </span>
+                    </div>
                     <ToastContainer position="top-center"
                         closeButton={false}
                         autoClose={3000}
@@ -164,6 +167,7 @@ function Signup() {
                         pauseOnHover
                         theme="dark" />
                 </form>
+            </div>
             </div>
             <Login isOpen={isLoginOpen} onClose={() => setLoginOpen(false)} />
         </>

@@ -51,9 +51,10 @@ const Updatevehicle = () => {
         const { name, value, type, checked } = e.target;
         setVehicle((prev) => ({
             ...prev,
-            [name]: type === "checkbox" ? checked : value,
+            [name]: name === "availability" ? value === "true" : type === "checkbox" ? checked : value,
         }));
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -104,11 +105,12 @@ const Updatevehicle = () => {
 
                         <FormGroup>
                             <Label>Availability</Label>
-                            <Input type="select" name="availability" value={vehicle.availability} onChange={handleChange}>
+                            <Input type="select" name="availability" value={vehicle.availability.toString()} onChange={handleChange}>
                                 <option value="true">Available</option>
                                 <option value="false">Not Available</option>
                             </Input>
                         </FormGroup>
+
 
                         <FormGroup>
                             <Label>Gear</Label>

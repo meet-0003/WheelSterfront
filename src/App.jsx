@@ -20,6 +20,8 @@ import PaymentPage from './components/vehicle/PaymentPage';
 import Profile from './components/Profile';
 import Admin from './components/admin/Admin';
 import Updatevehicle from './components/vehicle/Updatevehicle';
+import StripeProvider from "./components/payment/StripeProvider"; // Import StripeProvider
+import PaymentSuccess from "./components/vehicle/PaymentSuccess";
 
 
 function App() {
@@ -28,16 +30,20 @@ function App() {
 
   const role = useSelector((state) => state.auth.role);
   useEffect(() => {
-    if(
-      localStorage.getItem("id") &&
-      localStorage.getItem("token") &&
-      localStorage.getItem("role")
-    ){
-      dispatch(authActions.login(JSON.parse(localStorage.getItem("user"))));
-      dispatch(authActions.changeRole(localStorage.getItem("role")));
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+  
+    if (storedUser && storedToken) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        dispatch(authActions.login(parsedUser)); // ✅ Update user
+        dispatch(authActions.changeRole(parsedUser.role)); // ✅ Update role
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+        localStorage.removeItem("user"); // Reset corrupted data
+      }
     }
-  },[]);
-
+  }, []);
 
   return (
     <>
@@ -54,7 +60,13 @@ function App() {
             <Route path='/contactus' element={<Contactus/>} />
             <Route path='/get-vehicle-by-id/:id' element={<VehicleDetails/>} />
             <Route path='/book/:vehicleId' element={<BookingForm/>} />
-            <Route path='/paymentpage' element={<PaymentPage/>} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/paymentpage" element={
+              <StripeProvider>
+                <PaymentPage />
+              </StripeProvider>
+              }
+            />           
             <Route path='/profile' element={<Profile/>} />
             <Route path='/adminpro' element={<Admin/>} />
             <Route path="/update-vehicle/:id" element={<Updatevehicle />} />

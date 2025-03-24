@@ -7,14 +7,15 @@ const { Option } = Select;
 
 function Bookings() {
   const [bookings, setBookings] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const role = useSelector((state) => state.auth.role);
 
-  // Fetch bookings based on role
+  // Fetch bookings
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await axios.get("http://localhost:2000/api/v2/bookings", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { authorization: `bearer ${localStorage.getItem("token")}` },
         });
         setBookings(res.data.bookings);
       } catch (error) {
@@ -24,25 +25,44 @@ function Bookings() {
     fetchBookings();
   }, []);
 
-  // Handle status update
-  const handleStatusChange = async (id, status) => {
+  // Fetch available drivers
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      try {
+        const res = await axios.get("http://localhost:2000/api/v2/drivers", {
+          headers: { authorization: `bearer ${localStorage.getItem("token")}` },
+        });
+        setDrivers(res.data.drivers);
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      }
+    };
+    fetchDrivers();
+  }, []);
+
+  // Handle driver reassignment
+  const handleReassignDriver = async (bookingId, newDriverId) => {
     try {
-      const res = await axios.put(
-        "http://localhost:2000/api/v2/bookings-status",
-        { id, status },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `http://localhost:2000/api/v2/bookings/${bookingId}/reassign-driver`,
+        { newDriverId },
+        { headers: { authorization: `bearer ${token}` } }
       );
-      message.success("Booking status updated successfully");
-      
-      // Update state after status change
+
+      message.success(response.data.message);
+
+      // Update the booking list
       setBookings((prev) =>
         prev.map((booking) =>
-          booking._id === id ? { ...booking, status } : booking
+          booking._id === bookingId
+            ? { ...booking, driver: newDriverId, status: "Pending" }
+            : booking
         )
       );
     } catch (error) {
-      console.error("Error updating booking status:", error);
-      message.error("Failed to update booking status");
+      console.error("Failed to reassign driver:", error);
+      message.error("Error: Could not reassign driver");
     }
   };
 
@@ -58,19 +78,32 @@ function Bookings() {
       dataIndex: "status",
       key: "status",
       render: (status, record) =>
-        role === "admin" || role === "driver" ? (
-          <Select
-            defaultValue={status}
-            onChange={(newStatus) => handleStatusChange(record._id, newStatus)}
-            style={{ width: 120 }}
-          >
-            <Option value="Pending">Pending</Option>
-            <Option value="Confirmed">Confirmed</Option>
-            <Option value="Completed">Completed</Option>
-            <Option value="Cancelled">Cancelled</Option>
-          </Select>
+        role === "admin" ? (
+          <span>{status}</span>
         ) : (
           <span>{status}</span>
+        ),
+    },
+    {
+      title: "Reassign Driver",
+      key: "reassignDriver",
+      render: (_, record) =>
+        role === "admin" && record.status === "Driver Rejected" ? (
+          <Select
+            placeholder="Select Driver"
+            onChange={(newDriverId) =>
+              handleReassignDriver(record._id, newDriverId)
+            }
+            style={{ width: 150 }}
+          >
+            {drivers.map((driver) => (
+              <Option key={driver._id} value={driver._id}>
+                {driver.username}
+              </Option>
+            ))}
+          </Select>
+        ) : (
+          <span>-</span>
         ),
     },
   ];

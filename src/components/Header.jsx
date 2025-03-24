@@ -107,18 +107,18 @@ const Header = () => {
 
               <Col lg="3" md="3" sm="3" className=" d-flex align-items-center justify-content-end ">
                 <div className="header__secondary__right d-flex align-items-center justify-content-end gap-3">
-                  
-                  {isLoggedIn && role === 'driver'  &&
+
+                  {isLoggedIn && role === 'driver' &&
                     <div className="profile-container">
                       <div
                         className="profile-icon"
                         onMouseEnter={() => setDropdownOpen(true)}
                         onMouseLeave={() => setDropdownOpen(false)}
                       >
-                        
+
                         <Link to="/profile">
                           {user?.avatar ? (
-                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image"  />
+                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image" />
                           ) : (
                             <FaUserCircle size={35} className="profile-image" />
                           )}
@@ -135,17 +135,17 @@ const Header = () => {
                     </div>}
 
 
-                  {isLoggedIn && role === 'user'  &&
+                  {isLoggedIn && role === 'user' &&
                     <div className="profile-container">
                       <div
                         className="profile-icon"
                         onMouseEnter={() => setDropdownOpen(true)}
                         onMouseLeave={() => setDropdownOpen(false)}
                       >
-                        
+
                         <Link to="/profile">
                           {user?.avatar ? (
-                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image"  />
+                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image" />
                           ) : (
                             <FaUserCircle size={35} className="profile-image" />
                           )}
@@ -161,17 +161,17 @@ const Header = () => {
                       </div>
                     </div>}
 
-                  {isLoggedIn && role === 'admin'  &&
+                  {isLoggedIn && role === 'admin' &&
                     <div className="profile-container">
                       <div
                         className="profile-icon"
                         onMouseEnter={() => setDropdownOpen(true)}
                         onMouseLeave={() => setDropdownOpen(false)}
                       >
-                        
+
                         <Link to="/profile">
                           {user?.avatar ? (
-                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image"  />
+                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image" />
                           ) : (
                             <FaUserCircle size={35} className="profile-image" />
                           )}
@@ -190,14 +190,23 @@ const Header = () => {
 
                   {!isLoggedIn && (
                     <>
-                    <div className="header-buttons">
-                      <button className="login-btn" onClick={openLogin}>< i className="ri-login-circle-line"></i>Login</button>
-                      <button className="header__btn btn ">
-                        <Link to="/Signup" className=" d-flex align-items-center">
-                          <i className="ri-user-line"></i>Sign Up
+                      <div className="flex space-x-4">
+                        <button
+                          className="flex items-center px-6 py-2 text-white bg-black rounded-lg transition duration-300 shadow-md hover:opacity-80"
+                          onClick={openLogin}
+                        >
+                          <i className="ri-login-circle-line mr-2"></i>Login
+                        </button>
+
+                        <Link
+                          to="/Signup"
+                          className="flex items-center px-6 py-2 text-black bg-[#f9a826] rounded-lg transition duration-300 shadow-md hover:opacity-80"
+                        >
+                          <i className="ri-user-line mr-2"></i>Sign Up
                         </Link>
-                      </button>
-                    </div>
+                      </div>
+
+
                     </>
                   )}
                 </div>

@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Sigmar&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Protest+Guerrilla&family=Sigmar&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=WindSong:wght@400;500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Birthstone&family=League+Script&family=Mea+Culpa&family=Protest+Guerrilla&family=Sigmar&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=WindSong:wght@400;500&display=swap');
+
+
 @import url("https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap");
 
 
@@ -65,7 +64,7 @@ ul {
   color: #dd8a0d;
   font-weight: 800;
   font-size: 2rem;
-  font-family: "Birthstone", cursive;
+  font-family: 'Raleway', sans-serif;
   
 }
 
