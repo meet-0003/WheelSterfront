@@ -25,7 +25,7 @@ const auth = createSlice({
     login(state, action) {
       state.isLoggedIn = true;
       state.user = action.payload;
-      state.role = action.payload.role;  // ✅ Ensure role updates
+      state.role = action.payload.role; // ✅ Ensure role updates
       state.token = action.payload.token;
 
       localStorage.setItem("user", JSON.stringify(action.payload));
@@ -40,21 +40,20 @@ const auth = createSlice({
     },
     changeRole(state, action) {
       state.role = action.payload;
-      state.user.role = action.payload;
-      localStorage.setItem("user", JSON.stringify(state.user)); 
+      localStorage.setItem("role", action.payload);
     },
     updateUser(state, action) {
       state.user = action.payload;
       state.role = action.payload.role;
       localStorage.setItem("user", JSON.stringify(action.payload));
     },
-    updateToken(state, action) { // ✅ Add this function
+    updateToken(state, action) {
+      // ✅ Add this function
       state.token = action.payload;
       localStorage.setItem("token", action.payload);
-    }
+    },
   },
 });
 
 export const authActions = auth.actions;
 export default auth.reducer;
-

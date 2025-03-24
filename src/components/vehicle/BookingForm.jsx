@@ -5,15 +5,13 @@ import "../../styles/booking-form.css";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import DatePicker from "react-datepicker";  // Import React DatePicker
+import DatePicker from "react-datepicker"; // Import React DatePicker
 import "react-datepicker/dist/react-datepicker.css";
 
-
 const BookingForm = ({ data }) => {
-
-
   const { vehicleId } = useParams();
   const [bookedDates, setBookedDates] = useState([]); // Store booked dates
+  const [vehicleData, setVehicleData] = useState({}); // Store booked dates
 
   const [formData, setFormData] = useState({
     vehicleId: vehicleId,
@@ -27,7 +25,7 @@ const BookingForm = ({ data }) => {
     pincode: "",
     pickupTime: "",
     duration: "",
-    totalAmount: 0,
+    totalAmount: null,
     withDriver: false,
     licenseNumber: "",
   });
@@ -35,20 +33,23 @@ const BookingForm = ({ data }) => {
   useEffect(() => {
     if (vehicleId) {
       fetchBookedDates();
-    } 
+    }
   }, [vehicleId]);
-  
 
   const fetchBookedDates = async () => {
     try {
-      const response = await axios.get(`http://localhost:2000/api/v2/bookings/${vehicleId}`);
+      const response = await axios.get(
+        `http://localhost:2000/api/v2/bookings/${vehicleId}`
+      );
       const data = response.data;
-      
-      const bookedDatesArray = data.bookings.map(booking => {
-        const date = new Date(booking.startDate);
-        return isNaN(date) ? null : date;
-      }).filter(date => date !== null);
-  
+
+      const bookedDatesArray = data.bookings
+        .map((booking) => {
+          const date = new Date(booking.startDate);
+          return isNaN(date) ? null : date;
+        })
+        .filter((date) => date !== null);
+      setVehicleData(data.vehicle);
       setBookedDates(bookedDatesArray);
     } catch (error) {
       console.error("Error fetching booked dates:", error);
@@ -57,12 +58,12 @@ const BookingForm = ({ data }) => {
 
   // Check if a date is booked
   const isDateBooked = (date) => {
-    return bookedDates.some(bookedDate =>
-      bookedDate instanceof Date &&
-      !isNaN(bookedDate) &&
-      bookedDate.getTime() === date.getTime()
+    return bookedDates.some(
+      (bookedDate) =>
+        bookedDate instanceof Date &&
+        !isNaN(bookedDate) &&
+        bookedDate.getTime() === date.getTime()
     );
-
   };
 
   // Handle start date change
@@ -82,7 +83,6 @@ const BookingForm = ({ data }) => {
 
   const navigate = useNavigate();
 
-
   // Handle form change & update map immediately
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -91,17 +91,22 @@ const BookingForm = ({ data }) => {
       [name]: type === "checkbox" ? checked : value,
     };
 
+    if (name === "duration") {
+      const duration = parseInt(value);
+      const totalAmount = Number(vehicleData.rent) * Number(duration);
+      newFormData.totalAmount = totalAmount;
+    }
+
     setFormData(newFormData);
 
     // Construct address & fetch location
-    if (["location", "area", "city", "state", "country", "pincode"].includes(name)) {
+    if (
+      ["location", "area", "city", "state", "country", "pincode"].includes(name)
+    ) {
       const fullAddress = `${newFormData.area}, ${newFormData.location}, ${newFormData.city}, ${newFormData.state}, ${newFormData.country}, ${newFormData.pincode}`;
       fetchLocation(fullAddress);
     }
   };
-
-
-
 
   // Function to fetch location coordinates
   const fetchLocation = async (address) => {
@@ -120,9 +125,6 @@ const BookingForm = ({ data }) => {
     }
   };
 
-
-
-
   // Handle checkbox change properly
   const handleDriverOption = (isWithDriver) => {
     setFormData({
@@ -132,12 +134,18 @@ const BookingForm = ({ data }) => {
     });
   };
 
-
   // Auto-update map on formData change
   useEffect(() => {
     const fullAddress = `${formData.area}, ${formData.location}, ${formData.city}, ${formData.state}, ${formData.country}, ${formData.pincode}`;
     fetchLocation(fullAddress);
-  }, [formData.city, formData.state, formData.country, formData.location, formData.area, formData.pincode]);
+  }, [
+    formData.city,
+    formData.state,
+    formData.country,
+    formData.location,
+    formData.area,
+    formData.pincode,
+  ]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -168,10 +176,6 @@ const BookingForm = ({ data }) => {
     }
   };
 
-
-
-
-
   return (
     <div className="main-container">
       {/* Top Container with Heading */}
@@ -187,19 +191,31 @@ const BookingForm = ({ data }) => {
             <div className="form-row">
               <div className="form-group">
                 <label>Country</label>
-                <select name="country" value={formData.country} onChange={handleChange}>
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                >
                   <option>India</option>
                 </select>
               </div>
               <div className="form-group">
                 <label>State</label>
-                <select name="state" value={formData.state} onChange={handleChange}>
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                >
                   <option>Gujarat</option>
                 </select>
               </div>
               <div className="form-group">
                 <label>City</label>
-                <select name="city" value={formData.city} onChange={handleChange}>
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                >
                   <option>Surat</option>
                   <option>Vadodara</option>
                   <option>Ahmedabad</option>
@@ -211,18 +227,35 @@ const BookingForm = ({ data }) => {
             <div className="form-row">
               <div className="form-group">
                 <label>Location</label>
-                <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Enter location" />
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="Enter location"
+                />
               </div>
               <div className="form-group">
                 <label>Pincode</label>
-                <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} placeholder="Enter pincode" />
+                <input
+                  type="text"
+                  name="pincode"
+                  value={formData.pincode}
+                  onChange={handleChange}
+                  placeholder="Enter pincode"
+                />
               </div>
             </div>
 
             {/* Area */}
             <div className="form-group">
               <label>Area</label>
-              <textarea placeholder="Enter area details" name="area" value={formData.area} onChange={handleChange}></textarea>
+              <textarea
+                placeholder="Enter area details"
+                name="area"
+                value={formData.area}
+                onChange={handleChange}
+              ></textarea>
             </div>
 
             {/* Pickup Time & Duration & Total Amount */}
@@ -231,24 +264,32 @@ const BookingForm = ({ data }) => {
                 <label>Start Date</label>
                 <DatePicker
                   selected={formData.startDate}
-                  onChange={(date) => setFormData({ ...formData, startDate: date })}
+                  onChange={(date) =>
+                    setFormData({ ...formData, startDate: date })
+                  }
                   minDate={new Date()} // Disable past dates
                   filterDate={(date) => !isDateBooked(date)} // ✅ Pass date correctly
                   dateFormat="yyyy-MM-dd"
-                  dayClassName={(date) => (isDateBooked(date) ? "booked-day" : undefined)}
+                  dayClassName={(date) =>
+                    isDateBooked(date) ? "booked-day" : undefined
+                  }
                 />
-
 
                 <label>End Date</label>
                 <DatePicker
                   selected={formData.endDate}
-                  onChange={(date) => setFormData({ ...formData, endDate: date })}
+                  onChange={(date) =>
+                    setFormData({ ...formData, endDate: date })
+                  }
                   minDate={formData.startDate || new Date()} // Ensure end date is after start date
                   filterDate={(date) => !isDateBooked(date)}
                   dateFormat="yyyy-MM-dd"
-                  dayClassName={(date) => isDateBooked(date) ? "react-datepicker__day--booked" : undefined} // Add class to booked dates
+                  dayClassName={(date) =>
+                    isDateBooked(date)
+                      ? "react-datepicker__day--booked"
+                      : undefined
+                  } // Add class to booked dates
                 />
-
 
                 <label>Pickup Time</label>
                 <DatePicker
@@ -272,11 +313,24 @@ const BookingForm = ({ data }) => {
               </div>
               <div className="form-group">
                 <label>Duration (in days)</label>
-                <input type="number" name="duration" value={formData.duration} onChange={handleChange} placeholder="Enter duration" />
+                <input
+                  type="number"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleChange}
+                  placeholder="Enter duration"
+                />
               </div>
               <div className="form-group">
                 <label>Total Amount:</label>
-                <input type="number" readOnly value={formData.totalAmount} placeholder="Total Amount" />
+                <input
+                  type="number"
+                  name="totalAmount"
+                  // onChange={handleChange}
+                  value={formData.totalAmount}
+                  readOnly
+                  placeholder="Total Amount"
+                />
               </div>
             </div>
 
@@ -317,9 +371,19 @@ const BookingForm = ({ data }) => {
 
             {/* Buttons */}
             <div className="form-buttons">
-              <button type="button" className="continue-btn"><Link className="clink" to="/vehicles">Continue</Link></button>
-              <button type="button" className="back-btn"><Link className="clink" to="/vehicles">Back</Link></button>
-              <button type="submit" className="pay-btn">Proceed to Pay</button>
+              <button type="button" className="continue-btn">
+                <Link className="clink" to="/vehicles">
+                  Continue
+                </Link>
+              </button>
+              <button type="button" className="back-btn">
+                <Link className="clink" to="/vehicles">
+                  Back
+                </Link>
+              </button>
+              <button type="submit" className="pay-btn">
+                Proceed to Pay
+              </button>
             </div>
           </form>
         </div>
@@ -327,9 +391,21 @@ const BookingForm = ({ data }) => {
         {/* Right Side: Map Container */}
         <div className="map-container">
           <h5>Pickup Location</h5>
-          <MapContainer center={mapCenter} zoom={13} style={{ height: "400px", width: "100%" }}>
+          <MapContainer
+            center={mapCenter}
+            zoom={13}
+            style={{ height: "400px", width: "100%" }}
+          >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <Marker position={markerPosition} icon={L.icon({ iconUrl: "https://leafletjs.com/examples/custom-icons/leaf-red.png", iconSize: [25, 41], iconAnchor: [12, 41] })} />
+            <Marker
+              position={markerPosition}
+              icon={L.icon({
+                iconUrl:
+                  "https://leafletjs.com/examples/custom-icons/leaf-red.png",
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+              })}
+            />
           </MapContainer>
         </div>
       </div>

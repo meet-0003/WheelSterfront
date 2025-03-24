@@ -17,7 +17,9 @@ const Booking = () => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:2000/api/v2/bookings/driver/${user._id}`);
+        const response = await axios.get(
+          `http://localhost:2000/api/v2/driver/${user._id}`
+        );
         setBookings(response.data);
       } catch (error) {
         console.error("Failed to load bookings:", error);
