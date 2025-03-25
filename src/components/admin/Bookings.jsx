@@ -40,31 +40,7 @@ function Bookings() {
     fetchDrivers();
   }, []);
 
-  // Handle driver reassignment
-  const handleReassignDriver = async (bookingId, newDriverId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `http://localhost:2000/api/v2/bookings/${bookingId}/reassign-driver`,
-        { newDriverId },
-        { headers: { authorization: `bearer ${token}` } }
-      );
 
-      message.success(response.data.message);
-
-      // Update the booking list
-      setBookings((prev) =>
-        prev.map((booking) =>
-          booking._id === bookingId
-            ? { ...booking, driver: newDriverId, status: "Pending" }
-            : booking
-        )
-      );
-    } catch (error) {
-      console.error("Failed to reassign driver:", error);
-      message.error("Error: Could not reassign driver");
-    }
-  };
 
   const columns = [
     { title: "Username", dataIndex: ["user", "username"], key: "username" },
@@ -84,28 +60,7 @@ function Bookings() {
           <span>{status}</span>
         ),
     },
-    {
-      title: "Reassign Driver",
-      key: "reassignDriver",
-      render: (_, record) =>
-        role === "admin" && record.status === "Driver Rejected" ? (
-          <Select
-            placeholder="Select Driver"
-            onChange={(newDriverId) =>
-              handleReassignDriver(record._id, newDriverId)
-            }
-            style={{ width: 150 }}
-          >
-            {drivers.map((driver) => (
-              <Option key={driver._id} value={driver._id}>
-                {driver.username}
-              </Option>
-            ))}
-          </Select>
-        ) : (
-          <span>-</span>
-        ),
-    },
+    
   ];
 
   return (

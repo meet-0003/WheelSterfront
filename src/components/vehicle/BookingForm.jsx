@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "../../styles/booking-form.css";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import DatePicker from "react-datepicker"; // Import React DatePicker
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const BookingForm = ({ data }) => {
@@ -41,29 +40,69 @@ const BookingForm = ({ data }) => {
       const response = await axios.get(
         `http://localhost:2000/api/v2/bookings/${vehicleId}`
       );
+  
       const data = response.data;
-
-      const bookedDatesArray = data.bookings
-        .map((booking) => {
-          const date = new Date(booking.startDate);
-          return isNaN(date) ? null : date;
-        })
-        .filter((date) => date !== null);
+  
+      const bookedDatesArray = [];
+  
+      data.bookings.forEach((booking) => {
+        let start = new Date(booking.startDate);
+        let end = new Date(booking.endDate);
+  
+        // Store all dates from start to end
+        while (start <= end) {
+          bookedDatesArray.push(new Date(start)); // Push a new Date object
+          start.setDate(start.getDate() + 1); // Increment day
+        }
+      });
+  
       setVehicleData(data.vehicle);
       setBookedDates(bookedDatesArray);
     } catch (error) {
       console.error("Error fetching booked dates:", error);
     }
   };
+  
 
-  // Check if a date is booked
+  useEffect(() => {
+    if (formData.startDate && formData.duration && !formData.endDate) {
+      // Case 1: Start Date + Duration → Calculate End Date
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + Number(formData.duration));
+
+      const totalAmount = Number(formData.duration) * (vehicleData.rent || 0);
+
+      setFormData((prev) => ({
+        ...prev,
+        endDate: endDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+        totalAmount,
+      }));
+    } else if (formData.startDate && formData.endDate && !formData.duration) {
+      // Case 2: Start Date + End Date → Calculate Duration & Amount
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+
+      if (endDate > startDate) {
+        const duration = Math.ceil(
+          (endDate - startDate) / (1000 * 60 * 60 * 24)
+        ); // Calculate days difference
+
+        const totalAmount = duration * (vehicleData.rent || 0);
+
+        setFormData((prev) => ({
+          ...prev,
+          duration: duration.toString(),
+          totalAmount,
+        }));
+      }
+    }
+  }, [formData.startDate, formData.duration, formData.endDate, vehicleData]);
+
   const isDateBooked = (date) => {
-    return bookedDates.some(
-      (bookedDate) =>
-        bookedDate instanceof Date &&
-        !isNaN(bookedDate) &&
-        bookedDate.getTime() === date.getTime()
-    );
+    return bookedDates.some((bookedDate) => {
+      return bookedDate.toDateString() === date.toDateString();
+    });
   };
 
   // Handle start date change
@@ -71,8 +110,6 @@ const BookingForm = ({ data }) => {
     setFormData({ ...formData, startDate: date });
   };
 
-  const [mapCenter, setMapCenter] = useState([21.1702, 72.8311]); // Default Surat location
-  const [markerPosition, setMarkerPosition] = useState([21.1702, 72.8311]);
 
   useEffect(() => {
     setFormData((prevData) => ({
@@ -86,44 +123,17 @@ const BookingForm = ({ data }) => {
   // Handle form change & update map immediately
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const newFormData = {
+    const updatedFormData = {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     };
-
-    if (name === "duration") {
-      const duration = parseInt(value);
-      const totalAmount = Number(vehicleData.rent) * Number(duration);
-      newFormData.totalAmount = totalAmount;
-    }
-
-    setFormData(newFormData);
-
-    // Construct address & fetch location
-    if (
-      ["location", "area", "city", "state", "country", "pincode"].includes(name)
-    ) {
-      const fullAddress = `${newFormData.area}, ${newFormData.location}, ${newFormData.city}, ${newFormData.state}, ${newFormData.country}, ${newFormData.pincode}`;
-      fetchLocation(fullAddress);
-    }
+  
+    // Construct full address dynamically
+    updatedFormData.address = `${updatedFormData.area || ""}, ${updatedFormData.location || ""}, ${updatedFormData.city}, ${updatedFormData.state}, ${updatedFormData.country}, ${updatedFormData.pincode || ""}`.replace(/ ,/g, "").trim();
+  
+    setFormData(updatedFormData);
   };
-
-  // Function to fetch location coordinates
-  const fetchLocation = async (address) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${address}`
-      );
-      const data = await response.json();
-      if (data.length > 0) {
-        const { lat, lon } = data[0];
-        setMapCenter([parseFloat(lat), parseFloat(lon)]);
-        setMarkerPosition([parseFloat(lat), parseFloat(lon)]);
-      }
-    } catch (error) {
-      console.error("Error fetching map location:", error);
-    }
-  };
+  
 
   // Handle checkbox change properly
   const handleDriverOption = (isWithDriver) => {
@@ -134,22 +144,10 @@ const BookingForm = ({ data }) => {
     });
   };
 
-  // Auto-update map on formData change
-  useEffect(() => {
-    const fullAddress = `${formData.area}, ${formData.location}, ${formData.city}, ${formData.state}, ${formData.country}, ${formData.pincode}`;
-    fetchLocation(fullAddress);
-  }, [
-    formData.city,
-    formData.state,
-    formData.country,
-    formData.location,
-    formData.area,
-    formData.pincode,
-  ]);
-
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
 
     try {
       const token = localStorage.getItem("token");
@@ -167,12 +165,13 @@ const BookingForm = ({ data }) => {
 
         // Redirect to payment page with bookingId
         navigate(`/paymentpage?bookingId=${response.data.bookingId}`);
+        toast.success("Booking is created")
       } else {
-        alert("Booking created, but no Booking ID returned!");
+        toast.warn("Booking created, but no Booking ID returned!");
       }
     } catch (error) {
       console.error("Booking failed:", error);
-      alert(error.response?.data?.message || "Booking failed!");
+      toast.error(error.response?.data?.message || "Booking failed!");
     }
   };
 
@@ -193,8 +192,7 @@ const BookingForm = ({ data }) => {
                 <label>Country</label>
                 <select
                   name="country"
-                  value={formData.country}
-                  onChange={handleChange}
+
                 >
                   <option>India</option>
                 </select>
@@ -203,8 +201,7 @@ const BookingForm = ({ data }) => {
                 <label>State</label>
                 <select
                   name="state"
-                  value={formData.state}
-                  onChange={handleChange}
+
                 >
                   <option>Gujarat</option>
                 </select>
@@ -213,8 +210,7 @@ const BookingForm = ({ data }) => {
                 <label>City</label>
                 <select
                   name="city"
-                  value={formData.city}
-                  onChange={handleChange}
+
                 >
                   <option>Surat</option>
                   <option>Vadodara</option>
@@ -230,8 +226,8 @@ const BookingForm = ({ data }) => {
                 <input
                   type="text"
                   name="location"
-                  value={formData.location}
-                  onChange={handleChange}
+                  value={formData.location} // Add value
+                  onChange={handleChange} 
                   placeholder="Enter location"
                 />
               </div>
@@ -240,7 +236,7 @@ const BookingForm = ({ data }) => {
                 <input
                   type="text"
                   name="pincode"
-                  value={formData.pincode}
+                  value={formData.pincode} // Add value
                   onChange={handleChange}
                   placeholder="Enter pincode"
                 />
@@ -253,7 +249,7 @@ const BookingForm = ({ data }) => {
               <textarea
                 placeholder="Enter area details"
                 name="area"
-                value={formData.area}
+                value={formData.area} // Add value
                 onChange={handleChange}
               ></textarea>
             </div>
@@ -264,33 +260,24 @@ const BookingForm = ({ data }) => {
                 <label>Start Date</label>
                 <DatePicker
                   selected={formData.startDate}
-                  onChange={(date) =>
-                    setFormData({ ...formData, startDate: date })
-                  }
+                  onChange={(date) => setFormData({ ...formData, startDate: date })}
                   minDate={new Date()} // Disable past dates
-                  filterDate={(date) => !isDateBooked(date)} // ✅ Pass date correctly
+                  filterDate={(date) => !isDateBooked(date)} // Disable booked dates
                   dateFormat="yyyy-MM-dd"
-                  dayClassName={(date) =>
-                    isDateBooked(date) ? "booked-day" : undefined
-                  }
+                  dayClassName={(date) => (isDateBooked(date) ? "booked-day" : "")}
                 />
 
-                <label>End Date</label>
+                <label className="mt-4">End Date</label>
                 <DatePicker
                   selected={formData.endDate}
-                  onChange={(date) =>
-                    setFormData({ ...formData, endDate: date })
-                  }
+                  onChange={(date) => setFormData({ ...formData, endDate: date })}
                   minDate={formData.startDate || new Date()} // Ensure end date is after start date
                   filterDate={(date) => !isDateBooked(date)}
                   dateFormat="yyyy-MM-dd"
-                  dayClassName={(date) =>
-                    isDateBooked(date)
-                      ? "react-datepicker__day--booked"
-                      : undefined
-                  } // Add class to booked dates
+                  dayClassName={(date) => (isDateBooked(date) ? "booked-day" : "")}
                 />
-
+              </div>
+              <div className="form-group">
                 <label>Pickup Time</label>
                 <DatePicker
                   selected={formData.pickupTime}
@@ -371,42 +358,27 @@ const BookingForm = ({ data }) => {
 
             {/* Buttons */}
             <div className="form-buttons">
-              <button type="button" className="continue-btn">
-                <Link className="clink" to="/vehicles">
-                  Continue
-                </Link>
-              </button>
               <button type="button" className="back-btn">
                 <Link className="clink" to="/vehicles">
                   Back
                 </Link>
               </button>
-              <button type="submit" className="pay-btn">
+              <button type="submit" className="pay-btn bg-[#f9a826]">
                 Proceed to Pay
               </button>
             </div>
+            <ToastContainer position="top-center"
+              closeButton={false}
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={true}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark" />
           </form>
-        </div>
-
-        {/* Right Side: Map Container */}
-        <div className="map-container">
-          <h5>Pickup Location</h5>
-          <MapContainer
-            center={mapCenter}
-            zoom={13}
-            style={{ height: "400px", width: "100%" }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <Marker
-              position={markerPosition}
-              icon={L.icon({
-                iconUrl:
-                  "https://leafletjs.com/examples/custom-icons/leaf-red.png",
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-              })}
-            />
-          </MapContainer>
         </div>
       </div>
     </div>
