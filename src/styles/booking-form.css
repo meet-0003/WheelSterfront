@@ -165,6 +165,6 @@ textarea {
 .booked-day {
   background-color: red !important;
   color: white !important;
-  pointer-events: none; /* Prevent clicking */
-  opacity: 0.7;
+  cursor: not-allowed !important; /* This prevents interaction with booked dates */
 }
+

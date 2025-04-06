@@ -35,8 +35,12 @@ const Header = () => {
   const menuRef = useRef(null);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
-  function toggleMenu() {
+  function toggleMenu(e) {
+    e.stopPropagation();
     const menu = document.getElementById('menu');
+    if (menuRef.current) {
+      menuRef.current.classList.toggle("menu__active");
+    }
     if (menu) {
       menu.classList.toggle('open');
     } else {
@@ -108,85 +112,33 @@ const Header = () => {
               <Col lg="3" md="3" sm="3" className=" d-flex align-items-center justify-content-end ">
                 <div className="header__secondary__right d-flex align-items-center justify-content-end gap-3">
 
-                  {isLoggedIn && role === 'driver' &&
-                    <div className="profile-container">
-                      <div
-                        className="profile-icon"
-                        onMouseEnter={() => setDropdownOpen(true)}
-                        onMouseLeave={() => setDropdownOpen(false)}
-                      >
-
+                  {isLoggedIn && (
+                    <div
+                      className="profile-container"
+                      onMouseEnter={() => setDropdownOpen(true)}
+                      onMouseLeave={() => setDropdownOpen(false)}
+                    >
+                      <div className="profile-icon">
                         <Link to="/profile">
                           {user?.avatar ? (
-                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image" />
+                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image border-blue-500 border-2" />
                           ) : (
                             <FaUserCircle size={35} className="profile-image" />
                           )}
                         </Link>
-                        {dropdownOpen && (
-                          <div className="dropdown-menu" onMouseLeave={() => setDropdownOpen(false)}>
-                            <ul className="dropdown-content">
-                              <li><Link to="/profile" className="btn">Profile</Link></li>
-                              <li><Link to="/" className="btn" onClick={handleLogout}>LogOut</Link></li>
-                            </ul>
-                          </div>
-                        )}
                       </div>
-                    </div>}
 
+                      {dropdownOpen && (
+                        <div className="dropdown-menu">
+                          <ul className="dropdown-content">
+                            <li><Link to="/profile" className="btn">Profile</Link></li>
+                            <li><Link to="/" className="btn" onClick={handleLogout}>Log Out</Link></li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
 
-                  {isLoggedIn && role === 'user' &&
-                    <div className="profile-container">
-                      <div
-                        className="profile-icon"
-                        onMouseEnter={() => setDropdownOpen(true)}
-                        onMouseLeave={() => setDropdownOpen(false)}
-                      >
-
-                        <Link to="/profile">
-                          {user?.avatar ? (
-                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image" />
-                          ) : (
-                            <FaUserCircle size={35} className="profile-image" />
-                          )}
-                        </Link>
-                        {dropdownOpen && (
-                          <div className="dropdown-menu" onMouseLeave={() => setDropdownOpen(false)}>
-                            <ul className="dropdown-content">
-                              <li><Link to="/profile" className="btn">Profile</Link></li>
-                              <li><Link to="/" className="btn" onClick={handleLogout}>LogOut</Link></li>
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </div>}
-
-                  {isLoggedIn && role === 'admin' &&
-                    <div className="profile-container">
-                      <div
-                        className="profile-icon"
-                        onMouseEnter={() => setDropdownOpen(true)}
-                        onMouseLeave={() => setDropdownOpen(false)}
-                      >
-
-                        <Link to="/profile">
-                          {user?.avatar ? (
-                            <img src={`http://localhost:2000${user?.avatar}`} alt="Profile" className="profile-image" />
-                          ) : (
-                            <FaUserCircle size={35} className="profile-image" />
-                          )}
-                        </Link>
-                        {dropdownOpen && (
-                          <div className="dropdown-menu" onMouseLeave={() => setDropdownOpen(false)}>
-                            <ul className="dropdown-content">
-                              <li><Link to="/profile" className="btn">Profile</Link></li>
-                              <li><Link to="/" className="btn" onClick={handleLogout}>LogOut</Link></li>
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </div>}
-
+                  )}
 
                   {!isLoggedIn && (
                     <>
@@ -223,4 +175,9 @@ const Header = () => {
 }
 
 export default Header
+
+
+
+
+
 

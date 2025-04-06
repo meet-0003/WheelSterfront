@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { Table, message,Badge, Modal } from 'antd';
+import { Table, message, Spin, Popconfirm, Button, Badge, Modal } from 'antd';
 import axios from "axios";
+import { DeleteOutlined } from "@ant-design/icons";
+
 
 
 function Allusers() {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const token = localStorage.getItem("token");
 
@@ -22,6 +25,8 @@ function Allusers() {
             } catch (error) {
                 message.error("Failed to fetch users");
                 console.error("Error fetching users:", error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -40,6 +45,8 @@ function Allusers() {
         } catch (error) {
             message.error("Failed to fetch user details");
             console.error("Error fetching user details:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -54,6 +61,8 @@ function Allusers() {
         } catch (error) {
             message.error("Failed to delete user");
             console.error("Error deleting user:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -86,21 +95,39 @@ function Allusers() {
             dataIndex: "address",
             key: "address",
         },
+
         {
             title: "Action",
             key: "action",
             render: (text, record) => (
-                <a onClick={() => handleDelete(record._id)}>Delete</a>
+                <Popconfirm
+                    title="Are you sure to delete this?"
+                    onConfirm={() => handleDelete(record._id)}
+                    okText="Yes"
+                    cancelText="No"
+                >
+                    <Button type="primary" danger icon={<DeleteOutlined />} size="small">
+                        Delete
+                    </Button>
+                </Popconfirm>
             ),
-        },
+        }
     ];
 
     return (
         <>
-            <Table
-                columns={columns}
-                dataSource={users.map((user) => ({ ...user, key: user._id }))}
-            />
+            <h2 style={{ textAlign: "center", marginBottom: "20px" }} className="text-2xl">My Vehicle Bookings</h2>
+            {loading ? (
+                <Spin size="large" />
+            ) : (
+                <Table
+                    columns={columns}
+                    dataSource={users.map((user) => ({ ...user, key: user._id }))}
+                    rowClassName={(_, index) => (index % 2 === 0 ? "table-row-light" : "table-row-dark")}
+                    style={{ borderRadius: "8px", overflow: "hidden" }}
+                    rowKey="_id"
+                />
+            )}
             {/* User Details Modal */}
             <Modal
                 title={
@@ -143,6 +170,26 @@ function Allusers() {
 
                 )}
             </Modal>
+            <style>
+                {`
+  .table-row-light {
+    background-color: #ffffff;
+  }
+  .table-row-dark {
+    background-color: #f2f2f2;
+  }
+  .ant-table-thead > tr > th {
+    background-color: #001529 !important;
+    color: white !important;
+    font-size: 16px;
+    text-align: center !important;
+  }
+  .ant-table-tbody > tr > td {
+    text-align: center !important;
+  }
+`}
+
+            </style>
         </>
     )
 }

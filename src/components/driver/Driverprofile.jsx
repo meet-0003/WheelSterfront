@@ -7,6 +7,10 @@ const Driverprofile = () => {
   const [driver, setDriver] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [otp, setOtp] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [formData, setFormData] = useState({
     Name: "",
     email: "",
@@ -21,6 +25,10 @@ const Driverprofile = () => {
     licenseExpiry: "",
   });
   const [avatar, setAvatar] = useState(null);
+
+
+  
+
 
   useEffect(() => {
     const fetchDriverInfo = async () => {
@@ -62,6 +70,7 @@ const Driverprofile = () => {
   };
 
   const handleUpdateProfile = async () => {
+   
     try {
       const token = localStorage.getItem("token");
       const formDataToSend = new FormData();
@@ -69,7 +78,7 @@ const Driverprofile = () => {
       if (avatar) formDataToSend.append("avatar", avatar);
 
       await axios.put("http://localhost:2000/api/v2/update-profile", formDataToSend, {
-        headers: { authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+        headers: { authorization: `bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 
       toast.success("Profile updated successfully!");
@@ -77,6 +86,28 @@ const Driverprofile = () => {
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile!");
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    try {
+      await axios.post("http://localhost:2000/api/v2/forgot-password", { email: driver.email });
+      toast.warn("OTP sent to email");
+      setIsChangingPassword(true);
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    try {
+      await axios.post("http://localhost:2000/api/v2/reset-password", { email: driver.email, otp, newPassword });
+      toast.success("Password reset successful");
+      setIsChangingPassword(false);
+      setOtp("");
+      setNewPassword("");
+    } catch (error) {
+      console.error("Error resetting password:", error);
     }
   };
 
@@ -137,6 +168,20 @@ const Driverprofile = () => {
               <button onClick={() => setEditMode(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600">
                 Edit Profile
               </button>
+            )}
+
+            {!isChangingPassword ? (
+              <button onClick={handlePasswordChange} className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600">
+                Change Password
+              </button>
+            ) : (
+              <div className="flex flex-col items-center space-y-2">
+                <input type="text" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} className="px-4 py-2 border rounded-lg shadow-md" />
+                <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="px-4 py-2 border rounded-lg shadow-md" />
+                <button onClick={handleResetPassword} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600">
+                  Confirm Change
+                </button>
+              </div>
             )}
           </div>
         </div>

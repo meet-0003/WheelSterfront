@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { authActions } from "./store/auth";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import "antd/dist/reset.css";
 import Home from "./pages/Home";
 import Header from "./components/Header";
 import Login from "./components/Login";
@@ -20,7 +21,7 @@ import PaymentPage from "./components/vehicle/PaymentPage";
 import Profile from "./components/Profile";
 import Admin from "./components/admin/Admin";
 import Updatevehicle from "./components/vehicle/Updatevehicle";
-import StripeProvider from "./components/payment/StripeProvider"; // Import StripeProvider
+import StripeProvider from "./components/payment/StripeProvider";
 import PaymentSuccess from "./components/vehicle/PaymentSuccess";
 
 function App() {

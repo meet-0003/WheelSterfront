@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Form, Input, InputNumber, Button, Select, message } from "antd";
 import axios from "axios";
+import { notification } from "antd";
+
 
 const { Option } = Select;
 
@@ -9,30 +11,41 @@ const VehicleForm = () => {
   const [vehicleType, setVehicleType] = useState(null);
   const [loading, setLoading] = useState(false);
 
+
+  const showError = (msg) => {
+    notification.error({
+      message: "Error",
+      description: msg,
+      placement: "topRight",
+      duration: 3, 
+    });
+  };
+
   const onSubmit = async (values) => {
     if (!vehicleType) {
-      message.error("Please select a vehicle type!");
+      showError("Please select a vehicle type!");
       return;
     }
 
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-
-      console.log("Form Data:", values); // Debugging
-      console.log("Vehicle Type:", vehicleType); // Debugging
-
       const response = await axios.post(
-        `http://localhost:2000/api/v2/add-vehicle/${vehicleType}`, // Removed vehicleType from body
+        `http://localhost:2000/api/v2/add-vehicle/${vehicleType}`, 
         values,
         { headers: { authorization: `bearer ${token}` } }
       );
 
-      message.success(response.data.message);
+      notification.success({
+        message: "Success",
+        description: response.data.message,
+        placement: "topRight",
+        duration: 3,
+      });
       form.resetFields();
       setVehicleType(null);
     } catch (error) {
-      message.error(error.response?.data?.message || "Failed to add vehicle");
+      showError(error.response?.data?.message || "Failed to add vehicle");
     } finally {
       setLoading(false);
     }

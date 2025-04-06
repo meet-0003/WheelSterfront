@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Input, Button } from "antd";
 import Card from "./Card";
+import { FaSearch } from "react-icons/fa";
+
 
 const { Search } = Input;
 
@@ -13,14 +15,22 @@ function VehicleGallery() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [fuelFilter, setFuelFilter] = useState({
-    petrol: false, electric: false, diesel: false, gas: false, });
+    petrol: false, electric: false, diesel: false, gas: false,
+  });
   const [ratingFilter, setRatingFilter] = useState("");
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
-        const res = await axios.get("http://localhost:2000/api/v2/get-all-vehicle");
+        const token = localStorage.getItem("token"); // 👈 make sure you stored token on login
+
+        const res = await axios.get("http://localhost:2000/api/v2/get-all-vehicle", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         setData(res.data.data);
         setFilteredData(res.data.data);
 
@@ -30,8 +40,10 @@ function VehicleGallery() {
         console.error("Error fetching vehicle data:", error);
       }
     };
+
     fetchVehicles();
   }, []);
+
 
   useEffect(() => {
     let filtered = data;
@@ -64,7 +76,7 @@ function VehicleGallery() {
     }
 
     if (ratingFilter) {
-      filtered = filtered.filter((item) => item.rating >= ratingFilter);
+      filtered = filtered.filter((item) => item.averageRating >= ratingFilter);
     }
 
     setFilteredData(filtered);
@@ -79,20 +91,26 @@ function VehicleGallery() {
       </div>
 
       {/* Filters Section */}
-      <div className="border w-full h-auto p-4 flex flex-col md:flex-row justify-between items-center bg-gray-300 rounded-lg gap-4">
+      <div className="border w-full h-auto p-4 flex flex-wrap md:flex-nowrap justify-between items-center bg-gray-300 rounded-lg gap-4">
         {/* Filter Dropdown */}
-        <div className="relative">
-          <button className="border px-4 py-1 border-black text-sm" onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}>
+        <div
+          className="relative"
+          onMouseEnter={() => setIsFilterDropdownOpen(true)}
+          onMouseLeave={() => setIsFilterDropdownOpen(false)}>
+          <button
+            className="border px-4 py-1 border-black text-sm"
+          >
             Filters ▼
           </button>
           {isFilterDropdownOpen && (
-            <ul className="absolute left-0 mt-2 w-52 bg-white shadow-md rounded-md z-10 p-2">
+            <ul className="absolute left-0 w-52 bg-white shadow-md rounded-md z-10 p-2">
               {/* Vehicle Type */}
               {vehicleTypes.map((type) => (
                 <li
                   key={type}
-                  onClick={() => setSelectedType(type)}
-                  className={`cursor-pointer px-4 py-2 ${selectedType === type ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"}`}
+                  onClick={() => setSelectedType((prev) => prev === type ? "All" : type)}
+                  className={`cursor-pointer px-4 py-2 ${selectedType === type ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"
+                    }`}
                 >
                   {type}
                 </li>
@@ -102,68 +120,81 @@ function VehicleGallery() {
               {["Petrol", "Electric", "Diesel", "Gas"].map((fuel) => (
                 <li
                   key={fuel}
-                  className={`cursor-pointer px-4 py-2 flex items-center ${fuelFilter[fuel.toLowerCase()] ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"}`}
-                  onClick={() => setFuelFilter((prev) => ({ ...prev, [fuel.toLowerCase()]: !prev[fuel.toLowerCase()] }))}
+                  className={`cursor-pointer px-4 py-2 flex items-center ${fuelFilter[fuel.toLowerCase()] ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"
+                    }`}
+                  onClick={() =>
+                    setFuelFilter((prev) => ({
+                      ...prev,
+                      [fuel.toLowerCase()]: !prev[fuel.toLowerCase()],
+                    }))
+                  }
                 >
-                  <input type="checkbox" checked={fuelFilter[fuel.toLowerCase()]} readOnly className="mr-2" /> {fuel}
+                  <input
+                    type="checkbox"
+                    checked={fuelFilter[fuel.toLowerCase()]}
+                    readOnly
+                    className="mr-2"
+                  />
+                  {fuel}
                 </li>
               ))}
 
-              {/* Sort */}
+              {/* Sort Option */}
               {["lowToHigh", "highToLow"].map((option) => (
                 <li
                   key={option}
-                  onClick={() => setSortOption(option)}
-                  className={`cursor-pointer px-4 py-2 ${sortOption === option ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"}`}
+                  onClick={() =>
+                    setSortOption((prev) => (prev === option ? "" : option))
+                  }
+                  className={`cursor-pointer px-4 py-2 ${sortOption === option ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"
+                    }`}
                 >
                   {option === "lowToHigh" ? "Low to High" : "High to Low"}
                 </li>
               ))}
 
-              {/* Rating */}
+              {/* Rating Filter */}
               {[5, 4, 3, 2, 1].map((rating) => (
                 <li
                   key={rating}
-                  onClick={() => setRatingFilter(rating)}
-                  className={`cursor-pointer px-4 py-2 ${ratingFilter === rating ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"}`}
+                  onClick={() =>
+                    setRatingFilter((prev) => (prev === rating ? "" : rating))
+                  }
+                  className={`cursor-pointer px-4 py-2 ${ratingFilter === rating ? "bg-[#f9a826] text-white" : "hover:bg-gray-200"
+                    }`}
                 >
                   {rating} ⭐ & Up
                 </li>
               ))}
-
-              {/* Clear Filters */}
-              <li
-                onClick={() => {
-                  setSelectedType("All");
-                  setFuelFilter({ petrol: false, electric: false, diesel: false, gas: false });
-                  setSortOption("");
-                  setRatingFilter("");
-                }}
-                className="cursor-pointer px-4 py-2 bg-red-500 text-white text-center mt-2 rounded"
-              >
-                Clear Filters
-              </li>
             </ul>
           )}
         </div>
-        <div className="flex mt-2 gap-2">
-        <p className=" text-[#001021] mt-2 dark:text-gray-300 max-w-2xl ">
-          Browse through various vehicles and choose the best one for your journey.
-        </p>
-         <img src="/img/look-down.png" alt="" className="h-[40px] w-[55px] mb-2"/>
+
+        {/* Info & Image */}
+        <div className="flex items-center gap-2 md:gap-4 text-center md:text-left">
+          <p className="text-[#001021] dark:text-gray-300 max-w-lg">
+            Browse through various vehicles and choose the best one for your journey.
+          </p>
+          <img src="/img/look-down.png" alt="" className="h-[50px] w-[55px] hidden md:block" />
         </div>
-        {/* Search Box */}
-        <Search
-          placeholder="Search vehicle..."
-          allowClear
-          enterButton={<Button style={{ backgroundColor: "#f9a826", borderColor: "#f9a826", color: "white" }}>Search</Button>}
-          size="large"
-          className="w-full md:w-80 rounded-full text-white border-none  px-4 py-2"
-          onSearch={(value) => setSearchQuery(value)}
-        />
+
+        <div className="relative w-full md:w-80">
+          {/* Search Input */}
+          <Input
+            placeholder="Search vehicle..."
+            allowClear
+            size="large"
+            className="w-full rounded-full bg-black text-white border border-gray-400 px-4 py-2 pr-12 focus:ring-2 focus:ring-[#f9a826] focus:border-[#f9a826]"
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+
+          {/* Search Icon Inside Input (Right End) */}
+          <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#f9a826] text-xl z-10 pointer-events-none" />
+        </div>
       </div>
-      <div className="my-10 flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+      <div className="my-10 flex justify-center mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-6">
           {filteredData.length > 0 ? filteredData.map((item, i) => <Card key={i} data={item} />) : <p>No vehicles available.</p>}
         </div>
       </div>

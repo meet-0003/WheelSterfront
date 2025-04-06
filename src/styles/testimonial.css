@@ -1,18 +1,99 @@
+.testimonial {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 350px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  margin: 10px;
+}
+
+.testimonial p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+  flex-grow: 1;
+  margin-bottom: 20px;
+}
+
+.testimonial .customer-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+}
+
+.testimonial img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+}
+
+.testimonial h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.testimonial .section__description {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.slick-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
 @media only screen and (max-width: 768px) {
-    .testimonial p {
-      font-size: 0.8rem;
-      line-height: 1.5rem;
-    }
-  
-    .testimonial h6 {
-      font-size: 1rem;
-    }
+  .testimonial {
+    height: 380px;
   }
-  
-  @media only screen and (max-width: 576px) {
-    .testimonial img {
-      width: 60px !important;
-      height: 60px !important;
-      object-fit: cover;
-    }
+
+  .testimonial p {
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
+}
+
+@media only screen and (max-width: 576px) {
+  .testimonial img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .testimonial h6 {
+    font-size: 0.9rem;
+  }
+}
+
+.truncate-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 9;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-info h6 {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.user-info p {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.3rem;
+}

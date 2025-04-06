@@ -9,25 +9,12 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const BookingForm = ({ data }) => {
   const { vehicleId } = useParams();
-  const [bookedDates, setBookedDates] = useState([]); // Store booked dates
-  const [vehicleData, setVehicleData] = useState({}); // Store booked dates
+  const [bookedDates, setBookedDates] = useState([]);
+  const [completedDates, setCompletedDates] = useState([]);
+  const [canceledDates, setCanceledDates] = useState([]);
+  const [vehicleData, setVehicleData] = useState({});
 
-  const [formData, setFormData] = useState({
-    vehicleId: vehicleId,
-    startDate: "",
-    endDate: "",
-    location: "",
-    area: "",
-    city: "Surat",
-    state: "Gujarat",
-    country: "India",
-    pincode: "",
-    pickupTime: "",
-    duration: "",
-    totalAmount: null,
-    withDriver: false,
-    licenseNumber: "",
-  });
+  const [formData, setFormData] = useState({ vehicleId: vehicleId, startDate: "", endDate: "", location: "", area: "", city: "Surat", state: "Gujarat", country: "India", pincode: "", pickupTime: "", duration: "", totalAmount: 0, withDriver: false, licenseNumber: "", });
 
   useEffect(() => {
     if (vehicleId) {
@@ -35,80 +22,126 @@ const BookingForm = ({ data }) => {
     }
   }, [vehicleId]);
 
+  useEffect(() => {
+    const fetchVehicleData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:2000/api/v2/get-vehicle-by-id/${vehicleId}`);
+        setVehicleData(response.data.data);
+      } catch (error) {
+        console.error("❌ Error fetching vehicle data:", error);
+      }
+    };
+
+    if (vehicleId) {
+      fetchVehicleData();
+    }
+  }, [vehicleId]);
+
+
   const fetchBookedDates = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:2000/api/v2/bookings/${vehicleId}`
-      );
-  
+      const response = await axios.get(`http://localhost:2000/api/v2/bookings/${vehicleId}`);
       const data = response.data;
-  
-      const bookedDatesArray = [];
-  
+      const bookedDatesArray = new Set();
+      const completedDatesArray = new Set();
+      const canceledDatesArray = new Set();
+
       data.bookings.forEach((booking) => {
         let start = new Date(booking.startDate);
         let end = new Date(booking.endDate);
-  
-        // Store all dates from start to end
+
         while (start <= end) {
-          bookedDatesArray.push(new Date(start)); // Push a new Date object
-          start.setDate(start.getDate() + 1); // Increment day
+          const timestamp = start.getTime();
+
+          if (booking.status === "Completed") {
+            completedDatesArray.add(timestamp);
+          } else if (booking.status === "Cancelled") {
+            canceledDatesArray.add(timestamp);
+          } else if (booking.status === "Confirmed") {
+            bookedDatesArray.add(timestamp);
+          }
+
+          start.setDate(start.getDate() + 1);
         }
       });
-  
-      setVehicleData(data.vehicle);
-      setBookedDates(bookedDatesArray);
+
+      setBookedDates([...bookedDatesArray]);
+      setCompletedDates([...completedDatesArray]);
+      setCanceledDates([...canceledDatesArray]);
     } catch (error) {
-      console.error("Error fetching booked dates:", error);
+      console.error("❌ Error fetching booked dates:", error);
     }
   };
-  
+
+
+
+
+  const isDateBooked = (date) => bookedDates.includes(date.getTime());
+  const isDateCompleted = (date) => completedDates.includes(date.getTime());
+  const isDateCanceled = (date) => canceledDates.includes(date.getTime());
+
+
+
+  const filterDate = (date) => {
+    console.log(`Checking date: ${date.toDateString()}`);
+    console.log(`Booked: ${isDateBooked(date)}, Completed: ${isDateCompleted(date)}, Canceled: ${isDateCanceled(date)}`);
+
+    if (isDateCompleted(date) || isDateCanceled(date)) {
+      return true;
+    }
+    return !isDateBooked(date);
+  };
+
+
+  const dayClassName = (date) => {
+    if (isDateBooked(date)) {
+      return "booked-day";
+    } else if (isDateCompleted(date)) {
+      return "completed-day";
+    } else if (isDateCanceled(date)) {
+      return "canceled-day";
+    }
+    return "";
+  };
+
 
   useEffect(() => {
-    if (formData.startDate && formData.duration && !formData.endDate) {
-      // Case 1: Start Date + Duration → Calculate End Date
-      const startDate = new Date(formData.startDate);
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + Number(formData.duration));
-
-      const totalAmount = Number(formData.duration) * (vehicleData.rent || 0);
-
-      setFormData((prev) => ({
-        ...prev,
-        endDate: endDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
-        totalAmount,
-      }));
-    } else if (formData.startDate && formData.endDate && !formData.duration) {
-      // Case 2: Start Date + End Date → Calculate Duration & Amount
+    if (formData.startDate && formData.endDate) {
       const startDate = new Date(formData.startDate);
       const endDate = new Date(formData.endDate);
 
-      if (endDate > startDate) {
-        const duration = Math.ceil(
-          (endDate - startDate) / (1000 * 60 * 60 * 24)
-        ); // Calculate days difference
+      if (endDate <= startDate) return;
 
-        const totalAmount = duration * (vehicleData.rent || 0);
+      const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
 
-        setFormData((prev) => ({
-          ...prev,
-          duration: duration.toString(),
-          totalAmount,
-        }));
-      }
+      const totalAmount = duration * (vehicleData.rent || 0);
+
+      setFormData((prev) => ({
+        ...prev,
+        duration: duration.toString(),
+        totalAmount,
+      }));
     }
-  }, [formData.startDate, formData.duration, formData.endDate, vehicleData]);
+  }, [formData.startDate, formData.endDate, vehicleData.rent]);
 
-  const isDateBooked = (date) => {
-    return bookedDates.some((bookedDate) => {
-      return bookedDate.toDateString() === date.toDateString();
+
+
+
+  const handleStartDateChange = (date) => {
+    let newEndDate = formData.endDate ? new Date(formData.endDate) : null;
+
+    if (formData.duration) {
+      newEndDate = new Date(date);
+      newEndDate.setDate(newEndDate.getDate() + Number(formData.duration));
+    }
+
+    setFormData({
+      ...formData,
+      startDate: date,
+      endDate: newEndDate || "",
     });
   };
 
-  // Handle start date change
-  const handleStartDateChange = (date) => {
-    setFormData({ ...formData, startDate: date });
-  };
 
 
   useEffect(() => {
@@ -120,22 +153,26 @@ const BookingForm = ({ data }) => {
 
   const navigate = useNavigate();
 
-  // Handle form change & update map immediately
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const updatedFormData = {
+    let updatedFormData = {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     };
-  
-    // Construct full address dynamically
-    updatedFormData.address = `${updatedFormData.area || ""}, ${updatedFormData.location || ""}, ${updatedFormData.city}, ${updatedFormData.state}, ${updatedFormData.country}, ${updatedFormData.pincode || ""}`.replace(/ ,/g, "").trim();
-  
+
+    if (name === "duration" && formData.startDate) {
+      const newEndDate = new Date(formData.startDate);
+      newEndDate.setDate(newEndDate.getDate() + Number(value));
+
+      updatedFormData.endDate = newEndDate;
+      updatedFormData.totalAmount = Number(value) * (vehicleData.rent || 0);
+    }
+
     setFormData(updatedFormData);
   };
-  
 
-  // Handle checkbox change properly
+
+
   const handleDriverOption = (isWithDriver) => {
     setFormData({
       ...formData,
@@ -144,11 +181,8 @@ const BookingForm = ({ data }) => {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -160,10 +194,8 @@ const BookingForm = ({ data }) => {
       );
 
       if (response.data.bookingId) {
-        // Store bookingId in localStorage or pass it via state
         localStorage.setItem("bookingId", response.data.bookingId);
 
-        // Redirect to payment page with bookingId
         navigate(`/paymentpage?bookingId=${response.data.bookingId}`);
         toast.success("Booking is created")
       } else {
@@ -177,41 +209,29 @@ const BookingForm = ({ data }) => {
 
   return (
     <div className="main-container">
-      {/* Top Container with Heading */}
       <div className="heading-container">
         <h1>Vehicle Booking</h1>
       </div>
 
       <div className="booking-wrapper">
-        {/* Left Side: Booking Form */}
         <div className="booking-container">
           <form className="booking-form" onSubmit={handleSubmit}>
-            {/* Address Fields */}
             <div className="form-row">
               <div className="form-group">
                 <label>Country</label>
-                <select
-                  name="country"
-
-                >
+                <select name="country" >
                   <option>India</option>
                 </select>
               </div>
               <div className="form-group">
                 <label>State</label>
-                <select
-                  name="state"
-
-                >
+                <select name="state" >
                   <option>Gujarat</option>
                 </select>
               </div>
               <div className="form-group">
                 <label>City</label>
-                <select
-                  name="city"
-
-                >
+                <select name="city">
                   <option>Surat</option>
                   <option>Vadodara</option>
                   <option>Ahmedabad</option>
@@ -219,62 +239,43 @@ const BookingForm = ({ data }) => {
               </div>
             </div>
 
-            {/* Location & Pincode */}
             <div className="form-row">
               <div className="form-group">
                 <label>Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location} // Add value
-                  onChange={handleChange} 
-                  placeholder="Enter location"
-                />
+                <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Enter location" />
               </div>
               <div className="form-group">
                 <label>Pincode</label>
-                <input
-                  type="text"
-                  name="pincode"
-                  value={formData.pincode} // Add value
-                  onChange={handleChange}
-                  placeholder="Enter pincode"
-                />
+                <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} placeholder="Enter pincode" />
               </div>
             </div>
 
-            {/* Area */}
             <div className="form-group">
               <label>Area</label>
-              <textarea
-                placeholder="Enter area details"
-                name="area"
-                value={formData.area} // Add value
-                onChange={handleChange}
-              ></textarea>
+              <textarea placeholder="Enter area details" name="area" value={formData.area} onChange={handleChange}>
+              </textarea>
             </div>
 
-            {/* Pickup Time & Duration & Total Amount */}
             <div className="form-row">
               <div className="form-group">
                 <label>Start Date</label>
                 <DatePicker
                   selected={formData.startDate}
-                  onChange={(date) => setFormData({ ...formData, startDate: date })}
-                  minDate={new Date()} // Disable past dates
-                  filterDate={(date) => !isDateBooked(date)} // Disable booked dates
+                  onChange={handleStartDateChange}
+                  minDate={new Date()}
+                  filterDate={filterDate}
                   dateFormat="yyyy-MM-dd"
-                  dayClassName={(date) => (isDateBooked(date) ? "booked-day" : "")}
+                  dayClassName={dayClassName}
                 />
 
                 <label className="mt-4">End Date</label>
                 <DatePicker
                   selected={formData.endDate}
                   onChange={(date) => setFormData({ ...formData, endDate: date })}
-                  minDate={formData.startDate || new Date()} // Ensure end date is after start date
-                  filterDate={(date) => !isDateBooked(date)}
+                  minDate={formData.startDate || new Date()}
+                  filterDate={filterDate}
                   dateFormat="yyyy-MM-dd"
-                  dayClassName={(date) => (isDateBooked(date) ? "booked-day" : "")}
+                  dayClassName={dayClassName}
                 />
               </div>
               <div className="form-group">
@@ -282,81 +283,43 @@ const BookingForm = ({ data }) => {
                 <DatePicker
                   selected={formData.pickupTime}
                   onChange={(time) => {
-                    // Ensure pickupTime uses the same date as startDate
                     if (formData.startDate) {
                       const selectedDate = new Date(formData.startDate);
-                      selectedDate.setHours(time.getHours(), time.getMinutes()); // Merge time into startDate
+                      selectedDate.setHours(time.getHours(), time.getMinutes());
                       setFormData({ ...formData, pickupTime: selectedDate });
                     } else {
                       alert("Please select a start date first.");
                     }
-                  }}
-                  showTimeSelect
-                  showTimeSelectOnly
-                  timeIntervals={15}
-                  timeFormat="HH:mm"
-                  dateFormat="HH:mm"
-                />
+                  }} showTimeSelect showTimeSelectOnly timeIntervals={15} timeFormat="HH:mm" dateFormat="HH:mm" />
               </div>
               <div className="form-group">
                 <label>Duration (in days)</label>
-                <input
-                  type="number"
-                  name="duration"
-                  value={formData.duration}
-                  onChange={handleChange}
-                  placeholder="Enter duration"
-                />
+                <input type="number" name="duration" value={formData.duration} onChange={handleChange} placeholder="Enter duration" />
               </div>
               <div className="form-group">
                 <label>Total Amount:</label>
-                <input
-                  type="number"
-                  name="totalAmount"
-                  // onChange={handleChange}
-                  value={formData.totalAmount}
-                  readOnly
-                  placeholder="Total Amount"
-                />
+                <input type="number" name="totalAmount" value={formData.totalAmount} readOnly placeholder="Total Amount" />
               </div>
             </div>
 
-            {/* Driver Options */}
             <div className="checkbox-group">
               <label>
-                <input
-                  type="checkbox"
-                  checked={!formData.withDriver}
-                  onChange={() => handleDriverOption(false)}
-                />
+                <input type="checkbox" checked={!formData.withDriver} onChange={() => handleDriverOption(false)} />
                 Without Driver
               </label>
               <label>
-                <input
-                  type="checkbox"
-                  checked={formData.withDriver}
-                  onChange={() => handleDriverOption(true)}
-                />
+                <input type="checkbox" checked={formData.withDriver} onChange={() => handleDriverOption(true)} />
                 With Driver
               </label>
             </div>
 
-            {/* License Number (Only if 'Without Driver' is selected) */}
             {!formData.withDriver && (
               <div className="form-group">
                 <label>License Number</label>
-                <input
-                  type="text"
-                  name="licenseNumber"
-                  value={formData.licenseNumber}
-                  onChange={handleChange}
-                  placeholder="Enter license number"
-                  required
-                />
+                <input type="text" name="licenseNumber" value={formData.licenseNumber} onChange={handleChange} placeholder="Enter license number" required />
               </div>
             )}
 
-            {/* Buttons */}
             <div className="form-buttons">
               <button type="button" className="back-btn">
                 <Link className="clink" to="/vehicles">
@@ -367,17 +330,7 @@ const BookingForm = ({ data }) => {
                 Proceed to Pay
               </button>
             </div>
-            <ToastContainer position="top-center"
-              closeButton={false}
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={true}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="dark" />
+            <ToastContainer position="top-center" closeButton={false} autoClose={3000} hideProgressBar={false} newestOnTop={true} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
           </form>
         </div>
       </div>
